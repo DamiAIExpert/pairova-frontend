@@ -5,10 +5,9 @@ import Login from "./pages/login";
 import Register from "./pages/register";
 import Onboarding from "./pages/seeker/onboarding";
 import AccountPage from "./pages/seeker/accountPage";
-import InfoPage from "./pages/seeker/InfoPage";
 import AddressPage from "./pages/seeker/addressPage";
 import BioPage from "./pages/seeker/bioPage";
-
+import InfoPage from "./pages/seeker/infoPage";
 
 function App() {
   const router = createBrowserRouter([
