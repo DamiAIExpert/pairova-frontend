@@ -1,6 +1,5 @@
 import { Icon } from "@iconify/react";
-import { Link } from "react-router";
-
+// import { Link } from "react-router";
 
 const Bio = () => {
   return (
