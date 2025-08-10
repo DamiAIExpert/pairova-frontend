@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 const Success = () => {
   return (
     <div>
@@ -34,9 +36,11 @@ const Success = () => {
             </div>
 
             <div className="my-5">
-              <button className="bg-[#2F2F2F] text-white w-full py-3 rounded-md my-3">
-                Procees
-              </button>
+              <Link to='/seeker/create-account'>
+                <button className="bg-[#2F2F2F] text-white w-full py-3 rounded-md my-3">
+                  Proceed
+                </button>
+              </Link>
             </div>
           </div>
         </div>

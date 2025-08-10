@@ -1,8 +1,14 @@
 import LandingPage from "./pages/home/landingPage";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import UserAuth from "./pages/userAuth";
-import Login from "./pages/seeker/login";
-import Register from "./pages/seeker/register";
+import Login from "./pages/login";
+import Register from "./pages/register";
+import Onboarding from "./pages/seeker/onboarding";
+import AccountPage from "./pages/seeker/accountPage";
+import InfoPage from "./pages/seeker/InfoPage";
+import AddressPage from "./pages/seeker/addressPage";
+import BioPage from "./pages/seeker/bioPage";
+
 
 function App() {
   const router = createBrowserRouter([
@@ -21,6 +27,28 @@ function App() {
     {
       path: "/signup",
       element: <Register />,
+    },
+    {
+      path: "/seeker/create-account",
+      element: <Onboarding />,
+      children: [
+        {
+          index: true,
+          element: <AccountPage />,
+        },
+        {
+          path: "personal-information",
+          element: <InfoPage />,
+        },
+        {
+          path: "address",
+          element: <AddressPage />,
+        },
+        {
+          path: "bio",
+          element: <BioPage />,
+        },
+      ],
     },
   ]);
 
