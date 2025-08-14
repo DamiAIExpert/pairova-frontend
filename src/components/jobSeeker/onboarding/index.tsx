@@ -51,6 +51,24 @@ const Index = () => {
                   <p>Bio</p>
                 </div>
               </Link>
+
+              <Link to="education">
+                <div className="border-b border-black/30 p-5">
+                  <p>Education</p>
+                </div>
+              </Link>
+
+              <Link to="experience">
+                <div className="border-b border-black/30 p-5">
+                  <p>Experience</p>
+                </div>
+              </Link>
+
+               <Link to="skill">
+                <div className="border-b border-black/30 p-5">
+                  <p>Skill</p>
+                </div>
+              </Link>
             </div>
           </div>
 

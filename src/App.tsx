@@ -8,6 +8,9 @@ import AccountPage from "./pages/seeker/accountPage";
 import AddressPage from "./pages/seeker/addressPage";
 import BioPage from "./pages/seeker/bioPage";
 import InfoPage from "./pages/seeker/infoPage";
+import EducationPage from "./pages/seeker/educationPage";
+import ExperiencePage from "./pages/seeker/experiencePage";
+import SkillPage from "./pages/seeker/skillPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -46,6 +49,18 @@ function App() {
         {
           path: "bio",
           element: <BioPage />,
+        },
+        {
+          path: "education",
+          element: <EducationPage />,
+        },
+        {
+          path: "experience",
+          element: <ExperiencePage />,
+        },
+        {
+          path: "skill",
+          element: <SkillPage />,
         },
       ],
     },

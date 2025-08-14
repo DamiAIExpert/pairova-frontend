@@ -17,7 +17,7 @@ const PersonalInfo = () => {
       <div className="my-8">
         <Icon
           icon="line-md:arrow-left-circle"
-          className="text-2xl my-3 md:block"
+          className="text-2xl my-3 md:hidden"
         />
         <h2 className="font-semibold text-xl">Form</h2>
 
@@ -26,7 +26,7 @@ const PersonalInfo = () => {
             <h4 className="font-semibold">Personal Information</h4>
           </div>
 
-          <div className="my-10 px-5 grid grid-cpls-1 md:grid-cols-2 gap-5">
+          <div className="my-10 px-5 grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="w-full">
               <label htmlFor="">First Name</label>
               <input

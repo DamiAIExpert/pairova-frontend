@@ -16,7 +16,7 @@ const Address = () => {
       <div className="my-8">
         <Icon
           icon="line-md:arrow-left-circle"
-          className="text-2xl my-3 md:block"
+          className="text-2xl my-3 md:hidden"
         />
         <h2 className="font-semibold text-xl">Form</h2>
 

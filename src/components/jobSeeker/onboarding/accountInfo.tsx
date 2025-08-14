@@ -14,7 +14,7 @@ const AccountInfo = () => {
   return (
     <div>
       <div className="my-8">
-        <Icon icon="line-md:arrow-left-circle" className="text-2xl my-3 md:block" />
+        <Icon icon="line-md:arrow-left-circle" className="text-2xl my-3 md:hidden" />
         <h2 className="font-semibold text-xl">Form</h2>
 
         <div className="bg-white border border-black/30 my-5 rounded-md min-h-screen relative pb-[100px] md:pb-0">

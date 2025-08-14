@@ -1,5 +1,5 @@
 import { Icon } from "@iconify/react";
-// import { Link } from "react-router";
+import { Link } from "react-router";
 
 const Bio = () => {
   return (
@@ -7,7 +7,7 @@ const Bio = () => {
       <div className="my-8">
         <Icon
           icon="line-md:arrow-left-circle"
-          className="text-2xl my-3 md:block"
+          className="text-2xl my-3 md:hidden"
         />
         <h2 className="font-semibold text-xl">Form</h2>
 
@@ -27,22 +27,26 @@ const Bio = () => {
               ></textarea>
 
               <div className="flex justify-end">
-                <p className="border border-black/20 rounded-md px-5 py-2 text-sm">Max 150 words</p>
+                <p className="border border-black/20 rounded-md px-5 py-2 text-sm">
+                  Max 150 words
+                </p>
               </div>
             </div>
 
             <div className="border-t border-black/30 py-4 px-5 absolute bottom-0 right-0 w-full flex items-center justify-between">
-            <div>
-              <button className="py-2 px-7 rounded-md border border-black/30 hidden md:block">
-                Back
-              </button>
+              <div>
+                <button className="py-2 px-7 rounded-md border border-black/30 hidden md:block">
+                  Back
+                </button>
+              </div>
+              <div className="">
+                <Link to="/seeker/create-account/education">
+                  <button className="bg-black text-white py-3 px-8 rounded-md">
+                    Save and Continue
+                  </button>
+                </Link>
+              </div>
             </div>
-            <div className="">
-              <button className="bg-black text-white py-3 px-8 rounded-md">
-                Save and Continue
-              </button>
-            </div>
-          </div>
           </div>
         </div>
       </div>
