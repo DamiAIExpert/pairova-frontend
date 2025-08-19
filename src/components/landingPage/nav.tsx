@@ -2,10 +2,10 @@ import { Link } from "react-router";
 
 const Nav = () => {
   return (
-    <div>
+    <div className="container mx-auto">
       <div className="flex py-5 items-center justify-between px-10">
         <div>
-          <h2>Logo</h2>
+          <img src="/Images/logo.AVIF" alt="pairova" className="w-[100px]" />
         </div>
 
         <div className="md:flex items-center gap-5 hidden">
