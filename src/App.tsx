@@ -11,6 +11,7 @@ import InfoPage from "./pages/seeker/infoPage";
 import EducationPage from "./pages/seeker/educationPage";
 import ExperiencePage from "./pages/seeker/experiencePage";
 import SkillPage from "./pages/seeker/skillPage";
+import Seeker from "./pages/seeker/seeker";
 
 function App() {
   const router = createBrowserRouter([
@@ -63,6 +64,10 @@ function App() {
           element: <SkillPage />,
         },
       ],
+    },
+    {
+      path: "/seeker",
+      element: <Seeker />,
     },
   ]);
 

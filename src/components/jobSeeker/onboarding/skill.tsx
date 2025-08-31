@@ -92,7 +92,7 @@ const Skill = () => {
               </button>
             </div>
             <div className="">
-              <Link to="">
+              <Link to="/seeker">
                 <button className="bg-black text-white py-3 px-8 rounded-md">
                   Save and Continue
                 </button>
