@@ -19,7 +19,7 @@ const Otp = ({
         </div>
 
         <div className="w-full md:w-auto py-[50px] md:py-[150px] px-5 md:px-[100px]">
-          <h1 className="text-xl font-semibold">Logo</h1>
+          <img src="/Images/logo.AVIF" alt="pairova" className="w-[100px]" />
 
           <div>
             <h2 className="text-4xl font-semibold">Enter the six digit code</h2>
@@ -48,7 +48,7 @@ const Otp = ({
                 Try another way
               </button>
               <button
-                className="bg-[#2F2F2F] text-white w-full py-3 rounded-md my-3"
+                className="bg-[#2F2F2F] text-white w-full py-3 rounded-md my-3 cursor-pointer"
                 onClick={() => setStep({ stepThree: true })}
               >
                 Verify Code

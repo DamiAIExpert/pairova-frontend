@@ -25,7 +25,7 @@ const Success = () => {
           </div>
 
           <div className="md:w-[400px]">
-            <h1 className="text-xl font-semibold">Logo</h1>
+            <img src="/Images/logo.AVIF" alt="pairova" className="w-[100px]" />
 
             <div>
               <h2 className="text-4xl font-semibold">Created Successfully</h2>
@@ -36,8 +36,8 @@ const Success = () => {
             </div>
 
             <div className="my-5">
-              <Link to='/seeker/create-account'>
-                <button className="bg-[#2F2F2F] text-white w-full py-3 rounded-md my-3">
+              <Link to="/seeker/create-account">
+                <button className="bg-[#2F2F2F] text-white w-full py-3 rounded-md my-3 cursor-pointer">
                   Proceed
                 </button>
               </Link>

@@ -16,10 +16,10 @@ const Nav = () => {
 
         <div className="flex items-center gap-4">
           <Link to='/user'>
-            <button>Login</button>
+            <button className="cursor-pointer hover:underline">Login</button>
           </Link>
           <Link to='/user'>
-            <button className="bg-[#101010] text-white rounded-lg py-2 px-8">
+            <button className="bg-[#101010]/85 text-white rounded-lg py-2 px-8 cursor-pointer hover:bg-[#101010]/95">
               Sign Up
             </button>
           </Link>

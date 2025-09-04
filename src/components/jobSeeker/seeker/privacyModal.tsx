@@ -1,7 +1,11 @@
 import { Icon } from "@iconify/react";
 import { Switch } from "@/components/ui/switch";
 
-const PrivacyModal = ({setShowPrivacySetting} : {setShowPrivacySetting : (newValue: boolean) => void;}) => {
+const PrivacyModal = ({
+  setShowPrivacySetting,
+}: {
+  setShowPrivacySetting: (newValue: boolean) => void;
+}) => {
   return (
     <div className="bg-black/30 w-full h-full fixed top-0 z-[1000] ">
       <div className="bg-white py-5 px-5 rounded-xl w-[95%] md:w-[600px] h-[90%] mx-auto my-[50px] overflow-y-scroll">
@@ -82,8 +86,18 @@ const PrivacyModal = ({setShowPrivacySetting} : {setShowPrivacySetting : (newVal
         </div>
 
         <div className="border-t border-black/30 py-8 flex flex-col md:flex-row gap-4 items-center justify-between my-8">
-          <button className="px-7 py-2 rounded-md border border-black/30 text-[#818181] w-full md:w-auto" onClick={() => setShowPrivacySetting(false)}>Cancel</button>
-          <button className="bg-black text-white py-2 px-7 rounded-md w-full md:w-auto" onClick={() => setShowPrivacySetting(false)}>Save and Continue</button>
+          <button
+            className="px-7 py-2 rounded-md border border-black/30 text-[#818181] w-full md:w-auto cursor-pointer"
+            onClick={() => setShowPrivacySetting(false)}
+          >
+            Cancel
+          </button>
+          <button
+            className="bg-black text-white py-2 px-7 rounded-md w-full md:w-auto cursor-pointer"
+            onClick={() => setShowPrivacySetting(false)}
+          >
+            Save and Continue
+          </button>
         </div>
       </div>
     </div>

@@ -44,16 +44,16 @@ const Footer = () => {
               className="focus:outline-none bg-transparent border-none text-white w-full"
               placeholder="Email Address"
             />
-            <button className="bg-white px-7 py-1 rounded-md text-black">Send</button>
+            <button className="bg-white px-7 py-1 rounded-md text-black cursor-pointer">Send</button>
           </div>
 
-          <div className="my-8 ">
+          {/* <div className="my-8 ">
             <h5 className="font-semibold pb-2 text-white">Sponsors</h5>
 
             <div>
               <img src="/Images/uba.AVIF" alt="uba" />
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

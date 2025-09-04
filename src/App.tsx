@@ -12,6 +12,8 @@ import EducationPage from "./pages/seeker/educationPage";
 import ExperiencePage from "./pages/seeker/experiencePage";
 import SkillPage from "./pages/seeker/skillPage";
 import Seeker from "./pages/seeker/seeker";
+import JobPage from "./pages/seeker/jobPage";
+import FinderPage from "./pages/seeker/finderPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -68,6 +70,16 @@ function App() {
     {
       path: "/seeker",
       element: <Seeker />,
+      children: [
+        {
+          index: true,
+          element: <FinderPage />,
+        },
+        {
+          path: "job",
+          element: <JobPage />,
+        },
+      ],
     },
   ]);
 

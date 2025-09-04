@@ -6,7 +6,7 @@ const Index = () => {
     <div>
       <div>
         <div className="py-5 px-5 bg-white">
-          <h2 className="font-semibold text-3xl">Logo</h2>
+          <img src="/Images/logo.AVIF" alt="pairova" className="w-[100px]" />
         </div>
 
         <div className="bg-[#F1F1F1] px-3 flex gap-5">
@@ -28,7 +28,7 @@ const Index = () => {
                 </div>
               </div>
 
-              <Link to=''>
+              <Link to="">
                 <div className="border-b border-black/30 p-5">
                   <p>Account Info</p>
                 </div>
@@ -40,13 +40,13 @@ const Index = () => {
                 </div>
               </Link>
 
-               <Link to="address">
+              <Link to="address">
                 <div className="border-b border-black/30 p-5">
                   <p>Address</p>
                 </div>
               </Link>
 
-               <Link to="bio">
+              <Link to="bio">
                 <div className="border-b border-black/30 p-5">
                   <p>Bio</p>
                 </div>
@@ -64,7 +64,7 @@ const Index = () => {
                 </div>
               </Link>
 
-               <Link to="skill">
+              <Link to="skill">
                 <div className="border-b border-black/30 p-5">
                   <p>Skill</p>
                 </div>

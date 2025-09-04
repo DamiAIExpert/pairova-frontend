@@ -33,7 +33,7 @@ const Oppotunity = () => {
           </p>
 
           <div>
-            <button className="flex items-center gap-1 font-semibold my-5">
+            <button className="flex items-center gap-1 font-semibold my-5 cursor-pointer">
               <span className="underline">How it works</span>{" "}
               <Icon icon="basil:arrow-right-outline" className="text-2xl" />
             </button>

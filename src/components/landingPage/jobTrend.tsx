@@ -48,10 +48,10 @@ const JobTrend = () => {
               </div>
 
               <div className="flex gap-5">
-                <button className="px-10 py-2 border border-black/30 rounded-md w-full">
+                <button className="px-10 py-2 border border-black/30 rounded-md w-full cursor-pointer hover:bg-black/80 ease-in duration-200 hover:text-white">
                   View Details
                 </button>
-                <button className="bg-black/80 text-white px-10 py-2 rounded-md w-full">
+                <button className="bg-black/80 text-white px-10 py-2 rounded-md w-full cursor-pointer hover:bg-black/90">
                   Apply Now
                 </button>
               </div>
@@ -60,16 +60,12 @@ const JobTrend = () => {
             <div className="bg-white rounded-md px-5 py-5">
               <div className="flex items-center justify-between">
                 <div className="flex gap-3">
-                  <img src="/Images/paystack.svg" alt="paystack" />
+                  <img src="/Images/hulu.svg" alt="hulu" />
                   <div>
-                    <h4 className="font-semibold text-lg">
-                      Social Media Volunteer
-                    </h4>
+                    <h4 className="font-semibold text-lg">Legal Volunteer</h4>
                     <p className="text-sm text-[#6F6F6F]">
-                      <span className="font-[500] underline">
-                        A.O Foundation
-                      </span>{" "}
-                      in Uyo | Full Time
+                      <span className="font-[500] underline">Hulu</span> in New
+                      York | Full Time
                     </p>
                   </div>
                 </div>
@@ -92,10 +88,10 @@ const JobTrend = () => {
               </div>
 
               <div className="flex gap-5">
-                <button className="px-10 py-2 border border-black/30 rounded-md w-full">
+                <button className="px-10 py-2 border border-black/30 rounded-md w-full cursor-pointer hover:bg-black/80 ease-in duration-200 hover:text-white">
                   View Details
                 </button>
-                <button className="bg-black/80 text-white px-10 py-2 rounded-md w-full">
+                <button className="bg-black/80 text-white px-10 py-2 rounded-md w-full cursor-pointer hover:bg-black/90">
                   Apply Now
                 </button>
               </div>
@@ -104,16 +100,16 @@ const JobTrend = () => {
             <div className="bg-white rounded-md px-5 py-5">
               <div className="flex items-center justify-between">
                 <div className="flex gap-3">
-                  <img src="/Images/paystack.svg" alt="paystack" />
+                  <img src="/Images/tony.svg" alt="tony" />
                   <div>
                     <h4 className="font-semibold text-lg">
-                      Social Media Volunteer
+                      Volunteer: Intern
                     </h4>
                     <p className="text-sm text-[#6F6F6F]">
                       <span className="font-[500] underline">
-                        A.O Foundation
+                        TOE Foundation
                       </span>{" "}
-                      in Uyo | Full Time
+                      in Abuja | Full Time
                     </p>
                   </div>
                 </div>
@@ -136,10 +132,10 @@ const JobTrend = () => {
               </div>
 
               <div className="flex gap-5">
-                <button className="px-10 py-2 border border-black/30 rounded-md w-full">
+                <button className="px-10 py-2 border border-black/30 rounded-md w-full cursor-pointer hover:bg-black/80 ease-in duration-200 hover:text-white">
                   View Details
                 </button>
-                <button className="bg-black/80 text-white px-10 py-2 rounded-md w-full">
+                <button className="bg-black/80 text-white px-10 py-2 rounded-md w-full cursor-pointer hover:bg-black/90">
                   Apply Now
                 </button>
               </div>

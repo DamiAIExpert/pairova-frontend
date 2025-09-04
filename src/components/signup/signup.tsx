@@ -16,7 +16,7 @@ const Signup = ({
               Our Philosophy is simple
             </h2>
             <p className="text-white text-[24px] font-semibold">
-              Third allows non profit organizations
+              Pairova allows non profit organizations
               <br /> promote job roles for users
             </p>
           </div>
@@ -24,13 +24,14 @@ const Signup = ({
         </div>
 
         <div className="py-[50px] px-5 md:px-10 w-full md:w-[400px] md:mx-auto">
-          <h1 className="text-xl font-semibold">Logo</h1>
+          <img src="/Images/logo.AVIF" alt="pairova" className="w-[100px]" />
 
           <div>
-            <h2 className="text-4xl font-semibold">Join Third</h2>
+            <h2 className="text-4xl font-semibold">Join Pairova</h2>
             <p className="text-sm py-3 text-[#808080]">
               Let’s get started already. Join our 100%
-              <br className="hidden md:block"/> remote network of creators and freelancers{" "}
+              <br className="hidden md:block" /> remote network of creators and
+              freelancers{" "}
             </p>
           </div>
 
@@ -91,7 +92,10 @@ const Signup = ({
             </div>
 
             <div className="my-5">
-              <button className="bg-black text-white py-3 w-full rounded-md" onClick={() => setStep({stepTwo: true})}>
+              <button
+                className="bg-black text-white py-3 w-full rounded-md cursor-pointer"
+                onClick={() => setStep({ stepTwo: true })}
+              >
                 Signup
               </button>
 

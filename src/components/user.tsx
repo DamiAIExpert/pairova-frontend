@@ -7,14 +7,14 @@ const User = () => {
         <div className="w-full md:w-[40%] bg-[url(/Images/man-bg.AVIF)] h-[400px] md:min-h-screen bg-center md:bg-cover ">
           {/* <img src="/Images/man-bg.AVIF" alt="man" className="w-full min-h-screen " /> */}
           <div className="absolute top-[40px] left-[40px] md:hidden">
-             <h1 className="text-xl font-semibold text-white">Logo</h1>
+            <img src="/Images/logo.AVIF" alt="pairova" className="w-[100px]" />
           </div>
 
           <div className="w-full h-[400px] md:min-h-screen bg-black/50" />
         </div>
 
         <div className="px-5 md:px-auto w-full md:w-[400px] mx-auto my-10 md:my-auto">
-          <h1 className="text-xl font-semibold hidden md:block">Logo</h1>
+          <img src="/Images/logo.AVIF" alt="pairova" className="w-[100px]" />
 
           <div className="my-3">
             <h2 className="text-4xl font-semibold">Continue as</h2>
@@ -30,7 +30,7 @@ const User = () => {
                 Applicant
               </button>
             </Link>
-            <Link to='/signup'>
+            <Link to="/signup">
               <button className="my-3 py-3 w-full border border-[#81818166] text-[#81818166] rounded-lg hover:bg-black hover:text-white cursor-pointer ease-in duration-200">
                 Non Profit Organization
               </button>
