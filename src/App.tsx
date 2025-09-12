@@ -14,6 +14,9 @@ import SkillPage from "./pages/seeker/skillPage";
 import Seeker from "./pages/seeker/seeker";
 import JobPage from "./pages/seeker/jobPage";
 import FinderPage from "./pages/seeker/finderPage";
+import ProfileRoot from "./pages/seeker/profileRoot";
+import ProfilePage from "./pages/seeker/profilePage";
+import JobReminderPage from "./pages/seeker/jobReminderPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -78,6 +81,20 @@ function App() {
         {
           path: "job",
           element: <JobPage />,
+        },
+      ],
+    },
+    {
+      path: "/seeker/profile",
+      element: <ProfileRoot />,
+      children: [
+        {
+          index: true,
+          element: <ProfilePage />,
+        },
+        {
+          path: "job-reminder",
+          element: <JobReminderPage />,
         },
       ],
     },

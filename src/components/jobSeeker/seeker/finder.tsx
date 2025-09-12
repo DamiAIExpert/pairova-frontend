@@ -73,7 +73,7 @@ const Finder = () => {
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
         <div className="bg-white rounded-lg px-5 py-5">
           <div className="flex items-start justify-between">
-            <div className="flex gap-2">
+            <div className="flex items-start gap-2">
               <h4 className="text-2xl font-semibold text-white px-5 py-2 rounded-md bg-[#004D40]">
                 L
               </h4>
@@ -123,7 +123,7 @@ const Finder = () => {
 
         <div className="bg-white rounded-lg px-5 py-5">
           <div className="flex items-start justify-between">
-            <div className="flex gap-2">
+            <div className="flex items-start gap-2">
               <h4 className="text-2xl font-semibold text-white px-5 py-2 rounded-md bg-[#004D40]">
                 L
               </h4>
@@ -173,7 +173,7 @@ const Finder = () => {
 
         <div className="bg-white rounded-lg px-5 py-5">
           <div className="flex items-start justify-between">
-            <div className="flex gap-2">
+            <div className="flex items-start gap-2">
               <h4 className="text-2xl font-semibold text-white px-5 py-2 rounded-md bg-[#004D40]">
                 L
               </h4>
@@ -223,7 +223,7 @@ const Finder = () => {
 
         <div className="bg-white rounded-lg px-5 py-5">
           <div className="flex items-start justify-between">
-            <div className="flex gap-2">
+            <div className="flex items-start gap-2">
               <h4 className="text-2xl font-semibold text-white px-5 py-2 rounded-md bg-[#004D40]">
                 L
               </h4>
@@ -273,7 +273,7 @@ const Finder = () => {
 
         <div className="bg-white rounded-lg px-5 py-5">
           <div className="flex items-start justify-between">
-            <div className="flex gap-2">
+            <div className="flex items-start gap-2">
               <h4 className="text-2xl font-semibold text-white px-5 py-2 rounded-md bg-[#004D40]">
                 L
               </h4>

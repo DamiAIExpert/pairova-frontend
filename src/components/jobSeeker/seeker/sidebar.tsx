@@ -2,13 +2,15 @@ import { Icon } from "@iconify/react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-
+// import Notification from "./notification";
 import { useState, useEffect } from "react";
 import PrivacyModal from "./privacyModal";
 import { Outlet } from "react-router";
+import Header from "../header";
 
 const Sidebar = () => {
   const [showPrivacySetting, setShowPrivacySetting] = useState(false);
+  // const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
     setShowPrivacySetting(true);
@@ -19,21 +21,34 @@ const Sidebar = () => {
       {showPrivacySetting && (
         <PrivacyModal setShowPrivacySetting={setShowPrivacySetting} />
       )}
-      <div className="flex items-center justify-between py-5 px-5 md:px-[100px] border-b border-black/30 sticky top-0 bg-white">
+      {/* <div className="flex items-center justify-between py-5 px-5 md:px-[100px] border-b border-black/30 sticky top-0 bg-white">
         <div>
           <img src="/Images/logo.AVIF" alt="pairova" className="w-[100px]" />
         </div>
 
-        {/* <div className="hidden md:flex items-center gap-5">
+        <div className="hidden md:flex items-center gap-5">
           <button>Candidate</button>
           <button>Job</button>
           <button>Non profit</button>
-        </div> */}
+        </div>
 
         <div className="flex items-center gap-4">
-          <Icon icon="iconoir:bell" className="text-2xl" />
+          <div className="relative">
+            <Icon
+              icon="iconoir:bell"
+              className="text-2xl cursor-pointer"
+              onClick={() => setShowNotification(true)}
+            />
+            {showNotification && (
+              <Notification setShowNotification={setShowNotification} />
+            )}
+          </div>
           <img src="/Images/profile.svg" alt="profile" className="w-[30px]" />
         </div>
+      </div> */}
+
+      <div className="sticky top-0">
+        <Header />
       </div>
 
       <div className="flex ">
