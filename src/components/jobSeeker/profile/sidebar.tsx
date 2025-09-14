@@ -14,7 +14,7 @@ const Sidebar = () => {
           <div className="px-4 py-5 mt-10">
             <div className="my-5">
               <Link to="/seeker/profile">
-                <button className="flex gap-4 cursor-pointer">
+                <button className="flex gap-4 cursor-pointer hover:bg-black/10 w-full py-2 px-3 rounded-md ease-in duration-100">
                   <Icon icon="lucide:user-round" className="text-2xl" />
                   Profile
                 </button>
@@ -23,7 +23,7 @@ const Sidebar = () => {
 
             <div className="my-5">
               <Link to="/seeker/profile/job-reminder">
-                <button className="flex gap-4  cursor-pointer">
+                <button className="flex gap-4  cursor-pointer hover:bg-black/10 w-full py-2 px-3 rounded-md ease-in duration-100">
                   <Icon icon="fa7-regular:bell" className="text-2xl" />
                   Job Reminder
                 </button>
@@ -31,28 +31,30 @@ const Sidebar = () => {
             </div>
 
             <div className="my-5">
-              <button className="flex gap-4">
-                <Icon icon="lucide:lock-keyhole" className="text-2xl" />
-                Settings
-              </button>
+              <Link to="/seeker/profile/settings">
+                <button className="flex gap-4 cursor-pointer hover:bg-black/10 w-full py-2 px-3 rounded-md ease-in duration-100">
+                  <Icon icon="lucide:lock-keyhole" className="text-2xl" />
+                  Settings
+                </button>
+              </Link>
             </div>
 
             <div className="my-5">
-              <button className="flex gap-4">
+              <button className="flex gap-4 hover:bg-black/10 w-full py-2 px-3 rounded-md ease-in duration-100">
                 <Icon icon="mynaui:envelope" className="text-2xl" />
                 Messager
               </button>
             </div>
 
             <div className="my-5">
-              <button className="flex gap-4">
+              <button className="flex gap-4 hover:bg-black/10 w-full py-2 px-3 rounded-md ease-in duration-100">
                 <Icon icon="lucide:file-question-mark" className="text-2xl" />
                 Help center
               </button>
             </div>
 
             <div className="my-5">
-              <button className="flex gap-4 text-[#DF6161]">
+              <button className="flex gap-4 text-[#DF6161] hover:bg-[#DF6161]/10 cursor-pointer w-full py-2 px-3 rounded-md ease-in duration-100">
                 <Icon icon="mynaui:x-octagon" className="text-2xl" />
                 Delete Account
               </button>

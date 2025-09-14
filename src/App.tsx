@@ -17,6 +17,7 @@ import FinderPage from "./pages/seeker/finderPage";
 import ProfileRoot from "./pages/seeker/profileRoot";
 import ProfilePage from "./pages/seeker/profilePage";
 import JobReminderPage from "./pages/seeker/jobReminderPage";
+import SettingsPage from "./pages/seeker/settings";
 
 function App() {
   const router = createBrowserRouter([
@@ -95,6 +96,10 @@ function App() {
         {
           path: "job-reminder",
           element: <JobReminderPage />,
+        },
+        {
+          path: "settings",
+          element: <SettingsPage />,
         },
       ],
     },
