@@ -1,6 +1,8 @@
 import { Link } from "react-router";
+import { useUser } from "@/store";
 
 const User = () => {
+
   return (
     <div>
       <div className="flex flex-col md:flex-row items-center">
@@ -26,12 +28,12 @@ const User = () => {
 
           <div className="">
             <Link to="/login">
-              <button className="w-full py-3 my-3 bg-black text-white rounded-lg cursor-pointer">
+              <button className="w-full py-3 my-3 bg-black text-white rounded-lg cursor-pointer" onClick={() => {useUser.setState({user: "jobSeeker"})}}>
                 Applicant
               </button>
             </Link>
             <Link to="/signup">
-              <button className="my-3 py-3 w-full border border-[#81818166] text-[#81818166] rounded-lg hover:bg-black hover:text-white cursor-pointer ease-in duration-200">
+              <button className="my-3 py-3 w-full border border-[#81818166] text-[#81818166] rounded-lg hover:bg-black hover:text-white cursor-pointer ease-in duration-200" onClick={() => {useUser.setState({user: "nonProfit"})}}>
                 Non Profit Organization
               </button>
             </Link>

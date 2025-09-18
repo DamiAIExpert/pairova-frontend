@@ -1,7 +1,20 @@
 import { Icon } from "@iconify/react";
-import { Link } from "react-router";
+import {  useNavigate } from "react-router";
+import { useUser } from "@/store";
 
 const Skill = () => {
+  const {user} = useUser();
+
+  const navigate = useNavigate()
+
+  const handleClick = () => {
+    if(user === "jobSeeker") {
+      navigate("/seeker")
+    } else {
+
+    }
+  }
+
   return (
     <div>
       <div className="my-8">
@@ -92,11 +105,11 @@ const Skill = () => {
               </button>
             </div>
             <div className="">
-              <Link to="/seeker">
-                <button className="bg-black text-white py-3 px-8 rounded-md">
+              {/* <Link to="/seeker"> */}
+                <button className="bg-black text-white py-3 px-8 rounded-md" onClick={handleClick}>
                   Save and Continue
                 </button>
-              </Link>
+              {/* </Link> */}
             </div>
           </div>
         </div>

@@ -1,21 +1,7 @@
 import { Icon } from "@iconify/react";
-import { useNavigate } from "react-router";
-import { useUser } from "@/store";
+import { Link } from "react-router";
 
-const Bio = () => {
-
-  const {user} = useUser();
-
-  const navigate = useNavigate()
-
-  const handleClick = () => {
-    if(user === "jobSeeker") {
-      navigate("/seeker/create-account/education")
-    } else {
-      navigate("/non-profit/create-account/mission-statement")
-    }
-  }
-
+const MissionStatement = () => {
   return (
     <div>
       <div className="my-8">
@@ -27,7 +13,7 @@ const Bio = () => {
 
         <div className="bg-white border border-black/30 my-5 rounded-md relative min-h-screen">
           <div className="py-5 px-5 border-b border-black/30">
-            <h4 className="font-semibold">Bio</h4>
+            <h4 className="font-semibold">Mission Statement</h4>
           </div>
 
           <div className="my-10 px-5">
@@ -54,11 +40,11 @@ const Bio = () => {
                 </button>
               </div>
               <div className="">
-                {/* <Link to="/seeker/create-account/education"> */}
-                  <button className="bg-black text-white py-3 px-8 rounded-md" onClick={handleClick}>
+                <Link to="/non-profit/create-account/values">
+                  <button className="bg-black text-white py-3 px-8 rounded-md">
                     Save and Continue
                   </button>
-                {/* </Link> */}
+                </Link>
               </div>
             </div>
           </div>
@@ -68,4 +54,4 @@ const Bio = () => {
   );
 };
 
-export default Bio;
+export default MissionStatement;

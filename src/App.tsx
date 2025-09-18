@@ -19,6 +19,17 @@ import ProfilePage from "./pages/seeker/profilePage";
 import JobReminderPage from "./pages/seeker/jobReminderPage";
 import SettingsPage from "./pages/seeker/settings";
 
+// Non Profit
+
+import OnboardingNpo from "./pages/npo/onboardingNpo";
+import AccountNpo from "./pages/npo/accountNpo";
+import CompanyInfoPage from "./pages/npo/companyInfoPage";
+import AddressNpo from "./pages/npo/addressNpo";
+import BioNpo from "./pages/npo/bioNpo";
+import MissionPage from "./pages/npo/missionPage";
+import ValuesPage from "./pages/npo/valuesPage";
+import SkillsNpo from "./pages/npo/skillsNpo";
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -100,6 +111,43 @@ function App() {
         {
           path: "settings",
           element: <SettingsPage />,
+        },
+      ],
+    },
+
+    // Non Profit
+
+    {
+      path: "/non-profit/create-account",
+      element: <OnboardingNpo />,
+      children: [
+        {
+          index: true,
+          element: <AccountNpo />,
+        },
+        {
+          path: "company-info",
+          element: <CompanyInfoPage />,
+        },
+        {
+          path: "address",
+          element: <AddressNpo />,
+        },
+        {
+          path: "bio",
+          element: <BioNpo />,
+        },
+        {
+          path: "mission-statement",
+          element: <MissionPage />,
+        },
+        {
+          path: "values",
+          element: <ValuesPage />,
+        },
+        {
+          path: "skills",
+          element: <SkillsNpo />,
         },
       ],
     },

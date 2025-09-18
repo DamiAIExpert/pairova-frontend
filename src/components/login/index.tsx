@@ -1,7 +1,20 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Icon } from "@iconify/react";
+import { useUser } from "@/store";
 
 const Index = () => {
+  const { user } = useUser();
+
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (user === "jobSeeker") {
+      navigate("/seeker/create-account");
+    } else if (user === "nonProfit") {
+      navigate("/non-profit/create-account");
+    }
+  };
+
   return (
     <div>
       <div className="flex gap-10">
@@ -54,11 +67,14 @@ const Index = () => {
             </div>
 
             <div className="my-5">
-              <Link to="/seeker/create-account">
-                <button className="bg-black text-white py-3 w-full rounded-md cursor-pointer">
+              {/* <Link to="/seeker/create-account"> */}
+                <button
+                  className="bg-black text-white py-3 w-full rounded-md cursor-pointer"
+                  onClick={handleClick}
+                >
                   Login
                 </button>
-              </Link>
+              {/* </Link> */}
 
               <div className="my-2">
                 <button className="text-xs underline text-[#434343] w-full ">

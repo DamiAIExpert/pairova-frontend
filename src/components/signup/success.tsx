@@ -1,6 +1,20 @@
-import { Link } from "react-router";
+import { useNavigate } from "react-router";
+import { useUser } from "@/store";
 
 const Success = () => {
+
+  const { user } = useUser();
+
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (user === "jobSeeker") {
+      navigate("/seeker/create-account");
+    } else if (user === "nonProfit") {
+      navigate("/non-profit/create-account");
+    }
+  };
+
   return (
     <div>
       <div className="flex">
@@ -36,11 +50,9 @@ const Success = () => {
             </div>
 
             <div className="my-5">
-              <Link to="/seeker/create-account">
-                <button className="bg-[#2F2F2F] text-white w-full py-3 rounded-md my-3 cursor-pointer">
+                <button className="bg-[#2F2F2F] text-white w-full py-3 rounded-md my-3 cursor-pointer" onClick={handleClick}>
                   Proceed
                 </button>
-              </Link>
             </div>
           </div>
         </div>
