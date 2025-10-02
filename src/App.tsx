@@ -29,6 +29,9 @@ import BioNpo from "./pages/npo/bioNpo";
 import MissionPage from "./pages/npo/missionPage";
 import ValuesPage from "./pages/npo/valuesPage";
 import SkillsNpo from "./pages/npo/skillsNpo";
+import ProfileDashboard from "./pages/npo/dashboard/profileDashboard";
+import JobNpo from "./pages/npo/dashboard/jobNpo";
+import CreateJobNpo from "./pages/npo/dashboard/createJobNpo";
 
 function App() {
   const router = createBrowserRouter([
@@ -148,6 +151,20 @@ function App() {
         {
           path: "skills",
           element: <SkillsNpo />,
+        },
+      ],
+    },
+    {
+      path: "/non-profit",
+      element: <ProfileDashboard />,
+      children: [
+        {
+          index: true,
+          element: <JobNpo />,
+        },
+        {
+          path: "create-job",
+          element: <CreateJobNpo />,
         },
       ],
     },

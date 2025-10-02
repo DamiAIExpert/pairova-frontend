@@ -4,6 +4,7 @@ import { useUser } from "@/store";
 
 const Index = () => {
   const { user } = useUser();
+  // const user: string = "sds"
 
   const navigate = useNavigate();
 
@@ -68,12 +69,12 @@ const Index = () => {
 
             <div className="my-5">
               {/* <Link to="/seeker/create-account"> */}
-                <button
-                  className="bg-black text-white py-3 w-full rounded-md cursor-pointer"
-                  onClick={handleClick}
-                >
-                  Login
-                </button>
+              <button
+                className="bg-black text-white py-3 w-full rounded-md cursor-pointer"
+                onClick={handleClick}
+              >
+                Login
+              </button>
               {/* </Link> */}
 
               <div className="my-2">

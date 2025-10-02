@@ -11,7 +11,7 @@ const Skill = () => {
     if(user === "jobSeeker") {
       navigate("/seeker")
     } else {
-
+      navigate("/non-profit")
     }
   }
 
@@ -106,7 +106,7 @@ const Skill = () => {
             </div>
             <div className="">
               {/* <Link to="/seeker"> */}
-                <button className="bg-black text-white py-3 px-8 rounded-md" onClick={handleClick}>
+                <button className="bg-black text-white py-3 px-8 rounded-md cursor-pointer" onClick={handleClick}>
                   Save and Continue
                 </button>
               {/* </Link> */}
