@@ -32,6 +32,7 @@ import SkillsNpo from "./pages/npo/skillsNpo";
 import ProfileDashboard from "./pages/npo/dashboard/profileDashboard";
 import JobNpo from "./pages/npo/dashboard/jobNpo";
 import CreateJobNpo from "./pages/npo/dashboard/createJobNpo";
+import RecruitmentBoard from "./pages/npo/dashboard/recruitmentBoard";
 
 function App() {
   const router = createBrowserRouter([
@@ -165,6 +166,10 @@ function App() {
         {
           path: "create-job",
           element: <CreateJobNpo />,
+        },
+        {
+          path: "recruitment-board",
+          element: <RecruitmentBoard />,
         },
       ],
     },

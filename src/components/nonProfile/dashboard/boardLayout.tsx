@@ -23,12 +23,12 @@ const BoardLayout = () => {
               </div>
 
               <div className="my-5">
-                {/* <Link to="/seeker/profile/job-reminder"> */}
+                <Link to="/non-profit/recruitment-board">
                   <button className="flex gap-4  cursor-pointer hover:bg-black/10 w-full py-2 px-3 rounded-md ease-in duration-100">
                     <Icon icon="fa7-regular:bell" className="text-2xl" />
                     Recruitment Board
                   </button>
-                {/* </Link> */}
+                </Link>
               </div>
 
               <div className="my-5">
