@@ -1,0 +1,28 @@
+{
+  "name": "Pairova - Connect Talent with Purpose",
+  "short_name": "Pairova",
+  "description": "Find meaningful employment opportunities with nonprofit organizations. Connect talented professionals with purpose-driven work.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3B82F6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["employment", "nonprofit", "career", "jobs"],
+  "lang": "en-US",
+  "dir": "ltr"
+}
+

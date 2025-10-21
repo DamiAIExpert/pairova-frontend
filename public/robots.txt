@@ -1,0 +1,29 @@
+# Pairova Job Finder - Robots.txt
+# Allow all search engines to crawl the site
+
+User-agent: *
+Allow: /
+
+# Disallow crawling of API endpoints and authentication pages
+Disallow: /api/
+Disallow: /auth/
+
+# Sitemap location
+Sitemap: https://pairova.com/sitemap.xml
+
+# Crawl delay to be respectful to our servers
+Crawl-delay: 1
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
