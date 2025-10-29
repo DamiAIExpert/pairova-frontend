@@ -2,6 +2,7 @@ import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
 import { NonprofitService } from "@/services/nonprofit.service";
 import { useFileUpload } from "@/hooks/useFileUpload";
+import { useAuthStore } from "@/store/authStore";
 import { countries } from "@/utils/countries";
 
 const NonprofitSettings = () => {
