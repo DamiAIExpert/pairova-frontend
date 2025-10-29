@@ -70,9 +70,10 @@ export const useFileUpload = (options: UseFileUploadOptions = {}) => {
       const formData = new FormData();
       formData.append('file', file);
 
-      // Upload to backend
-      const response = await apiClient.post<UploadResponse>(
-        `/profiles/uploads?kind=${kind}`,
+      // Upload to backend using simple upload endpoint
+      console.log('📤 Uploading file to backend...');
+      const response = await apiClient.post<any>(
+        `/uploads/simple`,
         formData,
         {
           headers: {
@@ -84,10 +85,13 @@ export const useFileUpload = (options: UseFileUploadOptions = {}) => {
                 (progressEvent.loaded * 100) / progressEvent.total
               );
               setUploadProgress(progress);
+              console.log(`📊 Upload progress: ${progress}%`);
             }
           },
         }
       );
+      
+      console.log('✅ Upload response:', response.data);
 
       const uploadedFileUrl = response.data.url;
       setUploadedUrl(uploadedFileUrl);
