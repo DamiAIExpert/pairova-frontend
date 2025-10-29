@@ -72,13 +72,13 @@ export const useFileUpload = (options: UseFileUploadOptions = {}) => {
 
       // Upload to backend using simple upload endpoint
       console.log('📤 Uploading file to backend...');
+      console.log('📦 File details:', { name: file.name, size: file.size, type: file.type });
+      
       const response = await apiClient.post<any>(
         `/uploads/simple`,
         formData,
         {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
+          // Don't set Content-Type for FormData - browser sets it automatically with boundary
           onUploadProgress: (progressEvent) => {
             if (progressEvent.total) {
               const progress = Math.round(
