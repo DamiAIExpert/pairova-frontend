@@ -55,6 +55,7 @@ const NonprofitSettings = () => {
     try {
       setLoading(true);
       const profile = await NonprofitService.getProfile();
+      const { user } = useAuthStore.getState();
       console.log("📥 Fetched nonprofit profile:", profile);
 
       // Parse skills if they exist
@@ -73,7 +74,7 @@ const NonprofitSettings = () => {
         logoUrl: profile.logoUrl || "",
         orgName: profile.orgName || "",
         country: profile.country || "",
-        companyMail: profile.userId || "", // Assuming we store user email
+        companyMail: user?.email || "", // Get actual user email from auth store
         phone: profile.phone || "",
         foundedOn: profile.foundedOn ? new Date(profile.foundedOn).toISOString().split('T')[0] : "",
         language: "English",
@@ -303,10 +304,11 @@ const NonprofitSettings = () => {
               <input
                 type="email"
                 value={formData.companyMail}
-                onChange={(e) => setFormData(prev => ({ ...prev, companyMail: e.target.value }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                readOnly
+                className="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed"
                 placeholder="company@example.com"
               />
+              <p className="text-xs text-gray-500 mt-1">Email from your account registration</p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Phone</label>

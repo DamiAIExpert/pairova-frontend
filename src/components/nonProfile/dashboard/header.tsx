@@ -1,7 +1,25 @@
 import { Icon } from "@iconify/react";
 import { Link } from "react-router";
+import { useAuthStore } from "@/store/authStore";
+import { NonprofitService } from "@/services/nonprofit.service";
+import { useState, useEffect } from "react";
 
 const Header = () => {
+  const { user } = useAuthStore();
+  const [logoUrl, setLogoUrl] = useState("");
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profile = await NonprofitService.getProfile();
+        setLogoUrl(profile.logoUrl || "");
+      } catch (error) {
+        console.error("Failed to fetch nonprofit profile:", error);
+      }
+    };
+    fetchProfile();
+  }, []);
+
   return (
     <div>
       <div>
@@ -28,8 +46,14 @@ const Header = () => {
               <Notification setShowNotification={setShowNotification} />
             )} */}
             </div>
-            {/* <Link to="/seeker/profile"> */}
-            <img src="/Images/profile.svg" alt="profile" className="w-[30px]" />
+            {/* Organization Logo */}
+            <div className="w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+              {logoUrl ? (
+                <img src={logoUrl} alt="Organization" className="w-full h-full object-cover" />
+              ) : (
+                <Icon icon="lucide:building-2" className="text-xl text-gray-400" />
+              )}
+            </div>
             <Link to="/non-profit/create-job">
               <button className="text-sm border border-black rounded-md px-3 py-2 cursor-pointer">
                 Post a job
