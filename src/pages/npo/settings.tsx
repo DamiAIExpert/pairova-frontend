@@ -6,6 +6,7 @@ import { countries } from "@/utils/countries";
 
 const NonprofitSettings = () => {
   const { uploadFile, isUploading } = useFileUpload();
+  const { user } = useAuthStore(); // Get user from hook at component level
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -56,7 +57,6 @@ const NonprofitSettings = () => {
       setLoading(true);
       setError("");
       const profile = await NonprofitService.getProfile();
-      const { user } = useAuthStore.getState();
       console.log("📥 Fetched nonprofit profile:", profile);
 
       // Parse skills if they exist
@@ -105,7 +105,6 @@ const NonprofitSettings = () => {
         setError(""); // Clear error - this is expected
         
         // Set default values for new profile
-        const { user } = useAuthStore.getState();
         setFormData(prev => ({
           ...prev,
           companyMail: user?.email || "",
@@ -118,7 +117,6 @@ const NonprofitSettings = () => {
         setError(`Unable to load profile data. ${errorMessage}. You can still edit and save.`);
         
         // Even on error, set user email if available
-        const { user } = useAuthStore.getState();
         if (user?.email) {
           setFormData(prev => ({ ...prev, companyMail: user.email }));
         }
