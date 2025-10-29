@@ -9,8 +9,13 @@ const NonprofitSkills = () => {
   const navigate = useNavigate();
   const { user, setUser } = useAuthStore();
   
-  const [skills, setSkills] = useState<string[]>([]);
-  const [newSkill, setNewSkill] = useState("");
+  const [softSkills, setSoftSkills] = useState<string[]>([]);
+  const [hardSkills, setHardSkills] = useState<string[]>([]);
+  const [newSoftSkill, setNewSoftSkill] = useState("");
+  const [newHardSkill, setNewHardSkill] = useState("");
+  const [certificateUrl, setCertificateUrl] = useState("");
+  const [certificateFile, setCertificateFile] = useState<File | null>(null);
+  const [uploadingCertificate, setUploadingCertificate] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -25,8 +30,21 @@ const NonprofitSkills = () => {
         console.log('📥 Fetched nonprofit profile for skills:', profile);
         
         if (profile?.requiredSkills) {
-          setSkills(profile.requiredSkills);
+          // Parse required skills - format: { softSkills: [], hardSkills: [] }
+          const skills = profile.requiredSkills;
+          if (Array.isArray(skills)) {
+            // Legacy format - just an array
+            setSoftSkills(skills);
+          } else if (typeof skills === 'object' && skills !== null) {
+            // New format - object with softSkills and hardSkills
+            setSoftSkills((skills as any).softSkills || []);
+            setHardSkills((skills as any).hardSkills || []);
+          }
         }
+        
+        // Load certificate URL if exists
+        // TODO: Add certificate field to backend
+        
       } catch (err) {
         console.error('❌ Failed to load skills:', err);
       } finally {
@@ -37,28 +55,102 @@ const NonprofitSkills = () => {
     loadProfile();
   }, []);
 
-  const handleAddSkill = () => {
-    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
-      setSkills([...skills, newSkill.trim()]);
-      setNewSkill("");
+  const handleAddSoftSkill = () => {
+    if (newSoftSkill.trim() && !softSkills.includes(newSoftSkill.trim())) {
+      setSoftSkills([...softSkills, newSoftSkill.trim()]);
+      setNewSoftSkill("");
       setError("");
     }
   };
 
-  const handleRemoveSkill = (skillToRemove: string) => {
-    setSkills(skills.filter(skill => skill !== skillToRemove));
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddSkill();
+  const handleAddHardSkill = () => {
+    if (newHardSkill.trim() && !hardSkills.includes(newHardSkill.trim())) {
+      setHardSkills([...hardSkills, newHardSkill.trim()]);
+      setNewHardSkill("");
+      setError("");
     }
   };
 
+  const handleRemoveSoftSkill = (skillToRemove: string) => {
+    setSoftSkills(softSkills.filter(skill => skill !== skillToRemove));
+  };
+
+  const handleRemoveHardSkill = (skillToRemove: string) => {
+    setHardSkills(hardSkills.filter(skill => skill !== skillToRemove));
+  };
+
+  const handleSoftSkillKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddSoftSkill();
+    }
+  };
+
+  const handleHardSkillKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddHardSkill();
+    }
+  };
+
+  const handleCertificateUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type (PDF only)
+    if (file.type !== 'application/pdf') {
+      setError('Certificate must be a PDF file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Certificate file must be less than 5MB');
+      return;
+    }
+
+    try {
+      setUploadingCertificate(true);
+      setError('');
+      setCertificateFile(file);
+
+      // Upload certificate to backend
+      console.log('📤 Uploading certificate...');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3007'}/uploads/simple`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      setCertificateUrl(data.url);
+      console.log('✅ Certificate uploaded:', data.url);
+    } catch (err) {
+      console.error('❌ Certificate upload failed:', err);
+      setError('Failed to upload certificate. Please try again.');
+      setCertificateFile(null);
+    } finally {
+      setUploadingCertificate(false);
+    }
+  };
+
+  const handleRemoveCertificate = () => {
+    setCertificateFile(null);
+    setCertificateUrl('');
+  };
+
   const handleSubmit = async () => {
-    if (skills.length === 0) {
-      setError("Please add at least one required skill");
+    if (softSkills.length === 0 && hardSkills.length === 0) {
+      setError("Please add at least one soft skill or hard skill");
       return;
     }
 
@@ -66,11 +158,19 @@ const NonprofitSkills = () => {
       setSubmitting(true);
       setError("");
 
-      console.log('💾 Saving required skills:', skills);
+      // Prepare skills object
+      const skillsData = {
+        softSkills,
+        hardSkills,
+      };
+
+      console.log('💾 Saving required skills:', skillsData);
+      console.log('📄 Certificate URL:', certificateUrl);
 
       // Save skills to backend
       await NonprofitService.updateProfileStep({
-        requiredSkills: skills,
+        requiredSkills: skillsData as any,
+        // TODO: Add certificate URL to backend
       });
 
       console.log('✅ Skills saved successfully');
@@ -139,59 +239,181 @@ const NonprofitSkills = () => {
           )}
 
           <div className="my-10 px-5 pb-24">
-            {/* Add Skill Input */}
-            <div className="mb-6">
-              <label htmlFor="newSkill" className="text-sm font-medium block mb-2">
-                Add a skill
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  id="newSkill"
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="flex-1 py-3 px-4 border border-black/30 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                  placeholder="e.g., Project Management, Community Outreach"
-                  disabled={submitting}
-                />
-                <button
-                  onClick={handleAddSkill}
-                  disabled={!newSkill.trim() || submitting}
-                  className="bg-black text-white py-3 px-6 rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Add
-                </button>
-              </div>
-            </div>
-
-            {/* Skills List */}
-            <div>
-              <h5 className="text-sm font-medium mb-3">
-                Required Skills ({skills.length})
+            {/* Soft Skills Section */}
+            <div className="mb-8">
+              <h5 className="text-base font-semibold mb-3 flex items-center gap-2">
+                <Icon icon="mdi:account-heart" className="text-xl" />
+                Soft Skills
               </h5>
-              {skills.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Icon icon="mdi:lightbulb-outline" className="text-4xl mx-auto mb-2" />
-                  <p>No skills added yet. Add skills above.</p>
+              <p className="text-xs text-gray-600 mb-4">
+                Communication, Leadership, Teamwork, Problem-solving, etc.
+              </p>
+              
+              <div className="mb-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSoftSkill}
+                    onChange={(e) => setNewSoftSkill(e.target.value)}
+                    onKeyPress={handleSoftSkillKeyPress}
+                    className="flex-1 py-3 px-4 border border-black/30 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="e.g., Communication, Leadership"
+                    disabled={submitting}
+                  />
+                  <button
+                    onClick={handleAddSoftSkill}
+                    disabled={!newSoftSkill.trim() || submitting}
+                    className="bg-black text-white py-3 px-6 rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {softSkills.length === 0 ? (
+                <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-md">
+                  <Icon icon="mdi:lightbulb-outline" className="text-3xl mx-auto mb-2" />
+                  <p className="text-sm">No soft skills added yet</p>
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {skills.map((skill, index) => (
+                  {softSkills.map((skill, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full border border-gray-300"
+                      className="flex items-center gap-2 bg-blue-100 px-4 py-2 rounded-full border border-blue-300"
                     >
                       <span className="text-sm">{skill}</span>
                       <button
-                        onClick={() => handleRemoveSkill(skill)}
+                        onClick={() => handleRemoveSoftSkill(skill)}
                         disabled={submitting}
-                        className="text-gray-600 hover:text-red-600 transition-colors disabled:opacity-50"
+                        className="text-blue-600 hover:text-red-600 transition-colors disabled:opacity-50"
                       >
                         <Icon icon="mdi:close" className="text-lg" />
                       </button>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+
+            {/* Hard Skills Section */}
+            <div className="mb-8">
+              <h5 className="text-base font-semibold mb-3 flex items-center gap-2">
+                <Icon icon="mdi:tools" className="text-xl" />
+                Hard Skills / Technical Skills
+              </h5>
+              <p className="text-xs text-gray-600 mb-4">
+                Project Management, Data Analysis, Fundraising, Grant Writing, etc.
+              </p>
+              
+              <div className="mb-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newHardSkill}
+                    onChange={(e) => setNewHardSkill(e.target.value)}
+                    onKeyPress={handleHardSkillKeyPress}
+                    className="flex-1 py-3 px-4 border border-black/30 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="e.g., Project Management, Grant Writing"
+                    disabled={submitting}
+                  />
+                  <button
+                    onClick={handleAddHardSkill}
+                    disabled={!newHardSkill.trim() || submitting}
+                    className="bg-black text-white py-3 px-6 rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {hardSkills.length === 0 ? (
+                <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-md">
+                  <Icon icon="mdi:lightbulb-outline" className="text-3xl mx-auto mb-2" />
+                  <p className="text-sm">No hard skills added yet</p>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {hardSkills.map((skill, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 bg-green-100 px-4 py-2 rounded-full border border-green-300"
+                    >
+                      <span className="text-sm">{skill}</span>
+                      <button
+                        onClick={() => handleRemoveHardSkill(skill)}
+                        disabled={submitting}
+                        className="text-green-600 hover:text-red-600 transition-colors disabled:opacity-50"
+                      >
+                        <Icon icon="mdi:close" className="text-lg" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Certificate Upload Section */}
+            <div className="mb-8 border-t pt-8">
+              <h5 className="text-base font-semibold mb-3 flex items-center gap-2">
+                <Icon icon="mdi:certificate" className="text-xl" />
+                Certificate of Operation (Optional)
+              </h5>
+              <p className="text-xs text-gray-600 mb-4">
+                Upload your organization's certificate of registration or operation (PDF, max 5MB)
+              </p>
+
+              {certificateUrl ? (
+                <div className="bg-green-50 border border-green-300 rounded-md p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Icon icon="mdi:file-pdf-box" className="text-3xl text-red-600" />
+                    <div>
+                      <p className="text-sm font-medium">Certificate uploaded</p>
+                      <a 
+                        href={certificateUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        View certificate
+                      </a>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleRemoveCertificate}
+                    disabled={submitting}
+                    className="text-red-600 hover:text-red-800 transition-colors disabled:opacity-50"
+                  >
+                    <Icon icon="mdi:delete" className="text-2xl" />
+                  </button>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-black transition-colors">
+                  <input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    onChange={handleCertificateUpload}
+                    disabled={uploadingCertificate || submitting}
+                    className="hidden"
+                    id="certificate-upload"
+                  />
+                  <label 
+                    htmlFor="certificate-upload" 
+                    className={`cursor-pointer ${(uploadingCertificate || submitting) ? 'cursor-not-allowed opacity-50' : ''}`}
+                  >
+                    {uploadingCertificate ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <Icon icon="line-md:loading-loop" className="text-4xl text-black" />
+                        <p className="text-sm font-medium">Uploading certificate...</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2">
+                        <Icon icon="mdi:cloud-upload" className="text-4xl text-gray-400" />
+                        <p className="text-sm font-medium">Click to upload certificate</p>
+                        <p className="text-xs text-gray-500">PDF (Max 5MB)</p>
+                      </div>
+                    )}
+                  </label>
                 </div>
               )}
             </div>
@@ -213,7 +435,7 @@ const NonprofitSkills = () => {
                 className={`bg-black text-white py-3 px-8 rounded-md hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                   submitting ? 'opacity-50' : ''
                 }`}
-                disabled={submitting || skills.length === 0}
+                disabled={submitting || (softSkills.length === 0 && hardSkills.length === 0)}
               >
                 {submitting ? (
                   <>
