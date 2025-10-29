@@ -43,7 +43,10 @@ const NonprofitSkills = () => {
         }
         
         // Load certificate URL if exists
-        // TODO: Add certificate field to backend
+        if (profile?.certificateUrl) {
+          setCertificateUrl(profile.certificateUrl);
+          console.log('📄 Loaded certificate URL:', profile.certificateUrl);
+        }
         
       } catch (err) {
         console.error('❌ Failed to load skills:', err);
@@ -167,13 +170,13 @@ const NonprofitSkills = () => {
       console.log('💾 Saving required skills:', skillsData);
       console.log('📄 Certificate URL:', certificateUrl);
 
-      // Save skills to backend
+      // Save skills and certificate to backend
       await NonprofitService.updateProfileStep({
         requiredSkills: skillsData as any,
-        // TODO: Add certificate URL to backend
-      });
+        certificateUrl: certificateUrl || undefined,
+      } as any);
 
-      console.log('✅ Skills saved successfully');
+      console.log('✅ Skills and certificate saved successfully');
 
       // Mark this step as completed
       localStorage.setItem('npo_skills', 'completed');

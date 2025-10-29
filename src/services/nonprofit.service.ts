@@ -26,13 +26,14 @@ export interface NonprofitProfile {
   bio?: string;
   position?: string;
   registrationNumber?: string;
-  requiredSkills?: string[];
+  requiredSkills?: string[] | { softSkills?: string[]; hardSkills?: string[] };
   socialMediaLinks?: {
     linkedin?: string;
     twitter?: string;
     facebook?: string;
     instagram?: string;
   };
+  certificateUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -61,13 +62,14 @@ export interface UpdateNonprofitProfileDto {
   bio?: string;
   position?: string;
   registrationNumber?: string;
-  requiredSkills?: string[];
+  requiredSkills?: string[] | { softSkills?: string[]; hardSkills?: string[] };
   socialMediaLinks?: {
     linkedin?: string;
     twitter?: string;
     facebook?: string;
     instagram?: string;
   };
+  certificateUrl?: string;
 }
 
 /**
