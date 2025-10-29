@@ -32,33 +32,39 @@ const BoardLayout = () => {
               </div>
 
               <div className="my-5">
-                {/* <Link to="/seeker/profile/settings"> */}
+                <Link to="/non-profit/settings">
                   <button className="flex gap-4 cursor-pointer hover:bg-black/10 w-full py-2 px-3 rounded-md ease-in duration-100">
                     <Icon icon="lucide:lock-keyhole" className="text-2xl" />
                     Settings
                   </button>
-                {/* </Link> */}
+                </Link>
               </div>
 
               <div className="my-5">
-                <button className="flex gap-4 hover:bg-black/10 w-full py-2 px-3 rounded-md ease-in duration-100">
-                  <Icon icon="mynaui:envelope" className="text-2xl" />
-                  Message
-                </button>
+                <Link to="/non-profit/messages">
+                  <button className="flex gap-4 hover:bg-black/10 w-full py-2 px-3 rounded-md ease-in duration-100">
+                    <Icon icon="mynaui:envelope" className="text-2xl" />
+                    Message
+                  </button>
+                </Link>
               </div>
 
               <div className="my-5">
-                <button className="flex gap-4 hover:bg-black/10 w-full py-2 px-3 rounded-md ease-in duration-100">
-                  <Icon icon="lucide:file-question-mark" className="text-2xl" />
-                  Help center
-                </button>
+                <Link to="/non-profit/help-center">
+                  <button className="flex gap-4 hover:bg-black/10 w-full py-2 px-3 rounded-md ease-in duration-100">
+                    <Icon icon="lucide:file-question-mark" className="text-2xl" />
+                    Help center
+                  </button>
+                </Link>
               </div>
 
               <div className="my-5">
-                <button className="flex gap-4 text-[#DF6161] hover:bg-[#DF6161]/10 cursor-pointer w-full py-2 px-3 rounded-md ease-in duration-100">
-                  <Icon icon="mynaui:x-octagon" className="text-2xl" />
-                  Delete Account
-                </button>
+                <Link to="/non-profit/delete-account">
+                  <button className="flex gap-4 text-[#DF6161] hover:bg-[#DF6161]/10 cursor-pointer w-full py-2 px-3 rounded-md ease-in duration-100">
+                    <Icon icon="mynaui:x-octagon" className="text-2xl" />
+                    Delete Account
+                  </button>
+                </Link>
               </div>
             </div>
           </div>

@@ -37,6 +37,10 @@ import ProfileDashboard from "./pages/npo/dashboard/profileDashboard";
 import JobNpo from "./pages/npo/dashboard/jobNpo";
 import CreateJobNpo from "./pages/npo/dashboard/createJobNpo";
 import RecruitmentBoard from "./pages/npo/dashboard/recruitmentBoard";
+import NonprofitSettings from "./pages/npo/settings";
+import NonprofitMessages from "./pages/npo/messages";
+import NonprofitHelpCenter from "./pages/npo/helpCenter";
+import NonprofitDeleteAccount from "./pages/npo/deleteAccount";
 
 function App() {
   const router = createBrowserRouter([
@@ -202,6 +206,22 @@ function App() {
         {
           path: "recruitment-board",
           element: <RecruitmentBoard />,
+        },
+        {
+          path: "settings",
+          element: <NonprofitSettings />,
+        },
+        {
+          path: "messages",
+          element: <NonprofitMessages />,
+        },
+        {
+          path: "help-center",
+          element: <NonprofitHelpCenter />,
+        },
+        {
+          path: "delete-account",
+          element: <NonprofitDeleteAccount />,
         },
       ],
     },
