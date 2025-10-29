@@ -14,7 +14,8 @@ const Job = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchJobs = async () => {
     try {
@@ -28,11 +29,14 @@ const Job = () => {
         limit: 100,
       });
       
-      setJobs(result.jobs);
-      console.log(`✅ Fetched ${result.jobs.length} jobs`);
+      // Ensure we always set an array, even if result.jobs is undefined
+      setJobs(result?.jobs || []);
+      console.log(`✅ Fetched ${(result?.jobs || []).length} jobs`);
     } catch (err: any) {
       console.error("❌ Failed to fetch jobs:", err);
       setError(err.message || "Failed to load jobs");
+      // Set to empty array on error
+      setJobs([]);
     } finally {
       setLoading(false);
     }
@@ -45,7 +49,7 @@ const Job = () => {
       await JobsService.deleteJob(jobId);
       console.log("✅ Job deleted successfully");
       // Remove from local state
-      setJobs(jobs.filter(job => job.id !== jobId));
+      setJobs((jobs || []).filter(job => job.id !== jobId));
     } catch (err: any) {
       console.error("❌ Failed to delete job:", err);
       alert("Failed to delete job. Please try again.");
@@ -56,7 +60,7 @@ const Job = () => {
     navigate("/non-profit/create-job");
   };
 
-  const filteredJobs = jobs.filter(job =>
+  const filteredJobs = (jobs || []).filter(job =>
     searchQuery.trim() === "" ||
     job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     job.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -69,7 +73,7 @@ const Job = () => {
           <div>
             <h3 className="text-2xl font-semibold">Jobs Created</h3>
             <p className="text-sm text-[#616161]">
-              {loading ? "Loading..." : `${jobs.length} ${jobs.length === 1 ? 'job has' : 'jobs have'} been created`}
+              {loading ? "Loading..." : `${(jobs || []).length} ${(jobs || []).length === 1 ? 'job has' : 'jobs have'} been created`}
             </p>
           </div>
 
