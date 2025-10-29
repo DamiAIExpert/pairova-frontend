@@ -1,7 +1,49 @@
 import { Progress } from "@/components/ui/progress";
 import { Outlet, Link } from "react-router";
+import { useState, useEffect } from "react";
 
 const Index = () => {
+  const [progress, setProgress] = useState(0);
+
+  // Calculate progress based on completed sections
+  useEffect(() => {
+    const calculateProgress = () => {
+      const sections = [
+        'npo_accountInfo',
+        'npo_companyInfo',
+        'npo_address',
+        'npo_bio',
+        'npo_mission',
+        'npo_values',
+        'npo_skills'
+      ];
+      
+      const completedSections = sections.filter(section => 
+        localStorage.getItem(section) === 'completed'
+      ).length;
+      
+      const progressPercentage = Math.round((completedSections / sections.length) * 100);
+      setProgress(progressPercentage);
+    };
+
+    // Calculate on mount
+    calculateProgress();
+
+    // Listen for storage changes (when sections are completed)
+    const handleStorageChange = () => {
+      calculateProgress();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    // Also listen for custom event for same-window updates
+    window.addEventListener('npoProgressUpdate', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('npoProgressUpdate', handleStorageChange);
+    };
+  }, []);
+
   return (
     <div>
       <div>
@@ -20,11 +62,11 @@ const Index = () => {
                     <p className="font-[500]">Completion</p>
                   </div>
 
-                  <p className="font-[500]">16%</p>
+                  <p className="font-[500]">{progress}%</p>
                 </div>
 
                 <div className="my-3 border border-[#0E0E0E33] p-3 rounded-[999px]">
-                  <Progress value={16} />
+                  <Progress value={progress} />
                 </div>
               </div>
 

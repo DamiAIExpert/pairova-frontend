@@ -1,6 +1,63 @@
 import { Icon } from "@iconify/react";
+import { useState, useEffect } from "react";
+import { JobsService } from "@/services";
+import { useNavigate } from "react-router";
 
 const JobTrend = () => {
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchTrendingJobs = async () => {
+      try {
+        setLoading(true);
+        const result = await JobsService.getTrendingJobs({ page: 1, limit: 3 });
+        setJobs(result.jobs || []);
+        setError(null);
+      } catch (err: any) {
+        console.error("Error fetching trending jobs:", err);
+        setError(err.message || "Failed to load trending jobs");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrendingJobs();
+  }, []);
+
+  const formatEmploymentType = (type: string) => {
+    if (!type) return "Full Time";
+    return type
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
+  const formatTimeAgo = (date: string | Date) => {
+    const now = new Date();
+    const postedDate = new Date(date);
+    const diffInMs = now.getTime() - postedDate.getTime();
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 24) return `${diffInHours}hrs ago`;
+    if (diffInDays === 1) return "1 day ago";
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
+    return `${Math.floor(diffInDays / 30)} months ago`;
+  };
+
+  const handleViewDetails = (jobId: string) => {
+    navigate(`/jobs/${jobId}`);
+  };
+
+  const handleApplyNow = (jobId: string) => {
+    navigate(`/jobs/${jobId}?apply=true`);
+  };
+
   return (
     <div className="">
       <div className="bg-[#262626] my-[50px] py-10 px-5 md:px-[50px]">
@@ -12,135 +69,91 @@ const JobTrend = () => {
             Job Trends
           </h2>
 
-          <div className="flex flex-col lg:flex-row gap-5 my-5">
-            <div className="bg-white rounded-md px-5 py-5">
-              <div className="flex items-center justify-between">
-                <div className="flex gap-3">
-                  <img src="/Images/paystack.svg" alt="paystack" />
-                  <div>
-                    <h4 className="font-semibold text-lg">
-                      Social Media Volunteer
-                    </h4>
-                    <p className="text-sm text-[#6F6F6F]">
-                      <span className="font-[500] underline">
-                        A.O Foundation
-                      </span>{" "}
-                      in Uyo | Full Time
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="text-white text-lg">Loading trending jobs...</div>
+            </div>
+          ) : error ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="text-red-400 text-lg">{error}</div>
+            </div>
+          ) : jobs.length === 0 ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="text-white text-lg">No trending jobs available at the moment.</div>
+            </div>
+          ) : (
+            <div className="flex flex-col lg:flex-row gap-5 my-5">
+              {jobs.map((job) => (
+                <div key={job.id} className="bg-white rounded-md px-5 py-5 flex-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-3">
+                      {job.nonprofit?.logoUrl ? (
+                        <img
+                          src={job.nonprofit.logoUrl}
+                          alt={job.nonprofit.orgName || "Organization"}
+                          className="w-[50px] h-[50px] object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-[50px] h-[50px] bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center text-white font-bold text-xl">
+                          {(job.nonprofit?.orgName || job.orgName || "O").charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="font-semibold text-lg line-clamp-1">
+                          {job.title}
+                        </h4>
+                        <p className="text-sm text-[#6F6F6F]">
+                          <span className="font-[500] underline">
+                            {job.nonprofit?.orgName || job.orgName || "Organization"}
+                          </span>{" "}
+                          {job.orgLocation && `in ${job.orgLocation.split(',')[0]}`} | {formatEmploymentType(job.employmentType)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Icon icon="mdi-light:star" className="text-2xl flex-shrink-0" />
+                  </div>
+
+                  <div className="my-4">
+                    <p className="line-clamp-2 text-sm">
+                      {job.description || "No description available."}
                     </p>
                   </div>
-                </div>
 
-                <Icon icon="mdi-light:star" className="text-2xl" />
-              </div>
-
-              <div className="my-4">
-                <p>
-                  Hulu is an American subscription-based streaming service that
-                  offers a vast library of shows
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between my-5">
-                <p className="text-sm">
-                  <span className="text-lg font-[500]">30hrs</span> / week
-                </p>
-                <p className="text-sm">5hrs ago</p>
-              </div>
-
-              <div className="flex gap-5">
-                <button className="px-10 py-2 border border-black/30 rounded-md w-full cursor-pointer hover:bg-black/80 ease-in duration-200 hover:text-white">
-                  View Details
-                </button>
-                <button className="bg-black/80 text-white px-10 py-2 rounded-md w-full cursor-pointer hover:bg-black/90">
-                  Apply Now
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-md px-5 py-5">
-              <div className="flex items-center justify-between">
-                <div className="flex gap-3">
-                  <img src="/Images/hulu.svg" alt="hulu" />
-                  <div>
-                    <h4 className="font-semibold text-lg">Legal Volunteer</h4>
-                    <p className="text-sm text-[#6F6F6F]">
-                      <span className="font-[500] underline">Hulu</span> in New
-                      York | Full Time
+                  <div className="flex items-center justify-between my-5">
+                    {job.salaryRange ? (
+                      <p className="text-sm">
+                        <span className="text-lg font-[500]">
+                          ${job.salaryRange.min}-${job.salaryRange.max}
+                        </span>{" "}
+                        / {job.employmentType === "PART_TIME" ? "week" : "month"}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-gray-500">Compensation not specified</p>
+                    )}
+                    <p className="text-sm">
+                      {formatTimeAgo(job.createdAt || job.postedAt)}
                     </p>
                   </div>
-                </div>
 
-                <Icon icon="mdi-light:star" className="text-2xl" />
-              </div>
-
-              <div className="my-4">
-                <p>
-                  Hulu is an American subscription-based streaming service that
-                  offers a vast library of shows
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between my-5">
-                <p className="text-sm">
-                  <span className="text-lg font-[500]">30hrs</span> / week
-                </p>
-                <p className="text-sm">5hrs ago</p>
-              </div>
-
-              <div className="flex gap-5">
-                <button className="px-10 py-2 border border-black/30 rounded-md w-full cursor-pointer hover:bg-black/80 ease-in duration-200 hover:text-white">
-                  View Details
-                </button>
-                <button className="bg-black/80 text-white px-10 py-2 rounded-md w-full cursor-pointer hover:bg-black/90">
-                  Apply Now
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-md px-5 py-5">
-              <div className="flex items-center justify-between">
-                <div className="flex gap-3">
-                  <img src="/Images/tony.svg" alt="tony" />
-                  <div>
-                    <h4 className="font-semibold text-lg">
-                      Volunteer: Intern
-                    </h4>
-                    <p className="text-sm text-[#6F6F6F]">
-                      <span className="font-[500] underline">
-                        TOE Foundation
-                      </span>{" "}
-                      in Abuja | Full Time
-                    </p>
+                  <div className="flex gap-5">
+                    <button
+                      onClick={() => handleViewDetails(job.id)}
+                      className="px-10 py-2 border border-black/30 rounded-md w-full cursor-pointer hover:bg-black/80 ease-in duration-200 hover:text-white"
+                    >
+                      View Details
+                    </button>
+                    <button
+                      onClick={() => handleApplyNow(job.id)}
+                      className="bg-black/80 text-white px-10 py-2 rounded-md w-full cursor-pointer hover:bg-black/90"
+                    >
+                      Apply Now
+                    </button>
                   </div>
                 </div>
-
-                <Icon icon="mdi-light:star" className="text-2xl" />
-              </div>
-
-              <div className="my-4">
-                <p>
-                  Hulu is an American subscription-based streaming service that
-                  offers a vast library of shows
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between my-5">
-                <p className="text-sm">
-                  <span className="text-lg font-[500]">30hrs</span> / week
-                </p>
-                <p className="text-sm">5hrs ago</p>
-              </div>
-
-              <div className="flex gap-5">
-                <button className="px-10 py-2 border border-black/30 rounded-md w-full cursor-pointer hover:bg-black/80 ease-in duration-200 hover:text-white">
-                  View Details
-                </button>
-                <button className="bg-black/80 text-white px-10 py-2 rounded-md w-full cursor-pointer hover:bg-black/90">
-                  Apply Now
-                </button>
-              </div>
+              ))}
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

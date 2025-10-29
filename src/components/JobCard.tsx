@@ -31,7 +31,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
 
   const handleApply = async () => {
     if (!isAuthenticated) {
-      // Redirect to login or show login modal
+      // Redirect to user role selection page
+      window.location.href = `/user?redirect=/jobs/${job.id}`;
       return;
     }
 

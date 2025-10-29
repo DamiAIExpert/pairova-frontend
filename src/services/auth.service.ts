@@ -12,6 +12,8 @@ export interface RegisterRequest {
   email: string;
   password: string;
   role: Role;
+  fullName?: string;  // For applicants
+  orgName?: string;   // For nonprofits
 }
 
 export interface AuthResponse {
@@ -20,6 +22,7 @@ export interface AuthResponse {
     email: string;
     role: Role;
     isVerified: boolean;
+    hasCompletedOnboarding?: boolean;
     firstName?: string;
     lastName?: string;
     orgName?: string;
@@ -37,9 +40,10 @@ export interface UserProfile {
   email: string;
   role: Role;
   isVerified: boolean;
-  firstName?: string;
-  lastName?: string;
-  orgName?: string;
+  hasCompletedOnboarding?: boolean;
+  firstName?: string;  // From applicantProfile
+  lastName?: string;   // From applicantProfile
+  orgName?: string;    // From nonprofitOrg
   phone?: string;
   lastLoginAt?: string;
   createdAt: string;
@@ -57,9 +61,9 @@ export interface ResetPasswordRequest {
 }
 
 export const Role = {
-  ADMIN: 'ADMIN',
-  APPLICANT: 'APPLICANT',
-  NONPROFIT: 'NONPROFIT',
+  ADMIN: 'admin',
+  APPLICANT: 'applicant',
+  NONPROFIT: 'nonprofit',
 } as const;
 
 export type Role = typeof Role[keyof typeof Role];
@@ -116,13 +120,13 @@ export class AuthService {
     return response.data;
   }
 
-  static async verifyEmail(token: string): Promise<{ message: string }> {
-    const response = await apiClient.post<{ message: string }>('/auth/verify-email', { token });
+  static async verifyEmail(email: string, token: string): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>('/auth/verify-email', { email, token });
     return response.data;
   }
 
-  static async resendVerificationEmail(): Promise<{ message: string }> {
-    const response = await apiClient.post<{ message: string }>('/auth/resend-verification');
+  static async resendVerificationEmail(email: string): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>('/auth/resend-verification', { email });
     return response.data;
   }
 
@@ -136,6 +140,11 @@ export class AuthService {
       apiClient.setToken(response.data.accessToken);
     }
     
+    return response.data;
+  }
+
+  static async completeOnboarding(): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>('/auth/complete-onboarding');
     return response.data;
   }
 

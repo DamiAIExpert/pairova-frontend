@@ -43,6 +43,7 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
             error: null,
           });
+          return response; // Return response so caller can access user data
         } catch (error: any) {
           set({
             user: null,

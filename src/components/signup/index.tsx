@@ -3,6 +3,8 @@ import Signup from "./signup";
 import Otp from "./otp";
 import Success from "./success";
 
+type UserRole = "jobSeeker" | "nonProfit" | null;
+
 const Index = () => {
   const [step, setStep] = useState<{
     stepOne?: boolean;
@@ -14,11 +16,19 @@ const Index = () => {
     stepThree: false,
   });
 
+  const [userEmail, setUserEmail] = useState("");
+  const [userRole, setUserRole] = useState<UserRole>(null);
+
+  const handleSignupSuccess = (email: string, role: UserRole) => {
+    setUserEmail(email);
+    setUserRole(role);
+  };
+
   return (
     <div>
-      {step.stepOne && <Signup setStep={setStep} />}
-      {step.stepTwo && <Otp setStep={setStep} />}
-      {step.stepThree && <Success />}
+      {step.stepOne && <Signup setStep={setStep} onSignupSuccess={handleSignupSuccess} />}
+      {step.stepTwo && <Otp setStep={setStep} email={userEmail} />}
+      {step.stepThree && <Success userRole={userRole} />}
     </div>
   );
 };

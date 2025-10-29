@@ -1,7 +1,60 @@
 import { Icon } from "@iconify/react";
 import { Link } from "react-router";
+import { useState, useEffect } from "react";
+import { NonprofitService } from "@/services/nonprofit.service";
 
 const OurValues = () => {
+  const [loading, setLoading] = useState(true);
+  const [values, setValues] = useState("");
+
+  // Fetch existing nonprofit profile data
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        setLoading(true);
+        const profile = await NonprofitService.getProfile();
+        
+        console.log('📥 Fetched nonprofit profile for values:', profile);
+        
+        // Pre-populate with existing data
+        setValues(profile.values || "");
+      } catch (error) {
+        console.error('❌ Failed to fetch nonprofit profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+
+  const handleSaveAndContinue = async () => {
+    try {
+      // Save to backend
+      await NonprofitService.updateProfileStep({
+        values: values,
+      });
+
+      console.log('✅ Values saved to backend');
+
+      localStorage.setItem('npo_values', 'completed');
+      window.dispatchEvent(new Event('npoProgressUpdate'));
+    } catch (error) {
+      console.error('❌ Failed to save values:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Icon icon="line-md:loading-loop" className="text-4xl mx-auto mb-3" />
+          <p className="text-gray-600">Loading your information...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="my-8">
@@ -19,11 +72,11 @@ const OurValues = () => {
           <div className="my-10 px-5">
             <div className="px-5 py-5 border-2 border-black/20 rounded-md">
               <textarea
-                name=""
-                id=""
+                value={values}
+                onChange={(e) => setValues(e.target.value)}
                 className="resize-none w-full focus:outline-none"
                 rows={8}
-                placeholder="Enter a brief description about yourself..."
+                placeholder="Enter your organization's core values..."
               ></textarea>
 
               <div className="flex justify-end">
@@ -41,7 +94,10 @@ const OurValues = () => {
               </div>
               <div className="">
                 <Link to="/non-profit/create-account/skills">
-                  <button className="bg-black text-white py-3 px-8 rounded-md">
+                  <button 
+                    className="bg-black text-white py-3 px-8 rounded-md"
+                    onClick={handleSaveAndContinue}
+                  >
                     Save and Continue
                   </button>
                 </Link>

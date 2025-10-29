@@ -19,7 +19,7 @@ export interface ApiError {
 }
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3007';
 const API_VERSION = ''; // Backend doesn't use /api/v1 prefix
 
 class ApiClient {
@@ -55,11 +55,18 @@ class ApiClient {
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${API_VERSION}${endpoint}`;
     
+    // Create abort controller for timeout (30 seconds for registration, 15 seconds for others)
+    const isRegistration = endpoint.includes('/register');
+    const timeoutMs = isRegistration ? 30000 : 15000;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
       },
+      signal: controller.signal,
       ...options,
     };
 
@@ -73,6 +80,7 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -94,6 +102,15 @@ class ApiClient {
         status: response.status,
       };
     } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw {
+          message: `Request timed out after ${timeoutMs / 1000} seconds. Please try again.`,
+          status: 0,
+        } as ApiError;
+      }
+      
       if (error instanceof TypeError) {
         throw {
           message: 'Network error. Please check your connection.',

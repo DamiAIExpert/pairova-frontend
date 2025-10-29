@@ -15,10 +15,10 @@ const Nav = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <Link to='/user'>
+          <Link to='/login'>
             <button className="cursor-pointer hover:underline">Login</button>
           </Link>
-          <Link to='/user'>
+          <Link to='/signup'>
             <button className="bg-[#101010]/85 text-white rounded-lg py-2 px-8 cursor-pointer hover:bg-[#101010]/95">
               Sign Up
             </button>

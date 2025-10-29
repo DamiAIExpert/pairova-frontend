@@ -178,6 +178,16 @@ export class JobsService {
     return response.data;
   }
 
+  static async getTrendingJobs(params: PaginationParams = {}): Promise<JobSearchResult> {
+    const response = await apiClient.get<JobSearchResult>('/jobs/search/trending', params);
+    return response.data;
+  }
+
+  static async getJobById(id: string): Promise<Job> {
+    const response = await apiClient.get<Job>(`/jobs/${id}`);
+    return response.data;
+  }
+
   // Application endpoints
   static async applyForJob(applicationData: {
     jobId: string;
@@ -185,6 +195,31 @@ export class JobsService {
     resumeUploadId?: string;
   }): Promise<Application> {
     const response = await apiClient.post<Application>('/applications', applicationData);
+    return response.data;
+  }
+
+  static async applyForJobComprehensive(applicationData: {
+    jobId: string;
+    coverLetter?: string;
+    resumeUploadId?: string;
+    fullName: string;
+    email: string;
+    phone?: string;
+    linkedinUrl?: string;
+    portfolioUrl?: string;
+    yearsOfExperience?: string;
+    currentEmployer?: string;
+    expectedSalary?: string;
+    availabilityDate?: string;
+    willingToRelocate?: boolean;
+    referenceContact?: string;
+    experiences?: any[];
+    education?: any[];
+    certifications?: any[];
+    hardSkills?: string[];
+    techSkills?: string[];
+  }): Promise<Application> {
+    const response = await apiClient.post<Application>('/applications/comprehensive', applicationData);
     return response.data;
   }
 

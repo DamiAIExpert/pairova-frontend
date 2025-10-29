@@ -1,8 +1,9 @@
 import LandingPage from "./pages/home/landingPage";
-import { createBrowserRouter, RouterProvider } from "react-router";
-import UserAuth from "./pages/userAuth";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router";
 import Login from "./pages/login";
 import Register from "./pages/register";
+import AuthCallback from "./pages/AuthCallback";
+import VerifyEmail from "./pages/VerifyEmail";
 import Onboarding from "./pages/seeker/onboarding";
 import AccountPage from "./pages/seeker/accountPage";
 import AddressPage from "./pages/seeker/addressPage";
@@ -13,11 +14,14 @@ import ExperiencePage from "./pages/seeker/experiencePage";
 import SkillPage from "./pages/seeker/skillPage";
 import Seeker from "./pages/seeker/seeker";
 import JobPage from "./pages/seeker/jobPage";
+import ApplyPage from "./pages/seeker/applyPage";
 import FinderPage from "./pages/seeker/finderPage";
 import ProfileRoot from "./pages/seeker/profileRoot";
 import ProfilePage from "./pages/seeker/profilePage";
 import JobReminderPage from "./pages/seeker/jobReminderPage";
 import SettingsPage from "./pages/seeker/settings";
+import PrivacySettings from "./pages/PrivacySettings";
+import ProtectedOnboardingRoute from "./components/ProtectedOnboardingRoute";
 
 // Non Profit
 
@@ -42,7 +46,7 @@ function App() {
     },
     {
       path: "/user",
-      element: <UserAuth />,
+      element: <Navigate to="/signup" replace />,
     },
     {
       path: "/login",
@@ -53,8 +57,24 @@ function App() {
       element: <Register />,
     },
     {
+      path: "/auth/callback",
+      element: <AuthCallback />,
+    },
+    {
+      path: "/verify-email",
+      element: <VerifyEmail />,
+    },
+    {
+      path: "/jobs/:id",
+      element: <JobPage />,
+    },
+    {
       path: "/seeker/create-account",
-      element: <Onboarding />,
+      element: (
+        <ProtectedOnboardingRoute redirectToDashboard="/seeker">
+          <Onboarding />
+        </ProtectedOnboardingRoute>
+      ),
       children: [
         {
           index: true,
@@ -95,8 +115,12 @@ function App() {
           element: <FinderPage />,
         },
         {
-          path: "job",
+          path: "job/:id",
           element: <JobPage />,
+        },
+        {
+          path: "job/:id/apply",
+          element: <ApplyPage />,
         },
       ],
     },
@@ -118,12 +142,20 @@ function App() {
         },
       ],
     },
+    {
+      path: "/seeker/privacy-settings",
+      element: <PrivacySettings />,
+    },
 
     // Non Profit
 
     {
       path: "/non-profit/create-account",
-      element: <OnboardingNpo />,
+      element: (
+        <ProtectedOnboardingRoute redirectToDashboard="/non-profit">
+          <OnboardingNpo />
+        </ProtectedOnboardingRoute>
+      ),
       children: [
         {
           index: true,

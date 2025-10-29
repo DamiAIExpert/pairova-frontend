@@ -1,7 +1,23 @@
 import { Progress } from "@/components/ui/progress";
-import { Outlet, Link } from "react-router";
+import { Outlet, Link, useLocation } from "react-router";
+import { useOnboardingStore } from "@/store/onboardingStore";
+import { useEffect } from "react";
+import { Icon } from "@iconify/react";
 
 const Index = () => {
+  const { steps, getProgress, setCurrentStep } = useOnboardingStore();
+  const location = useLocation();
+  const progress = getProgress();
+
+  // Update current step based on route
+  useEffect(() => {
+    const path = location.pathname.split('/').pop() || '';
+    const currentStep = steps.find(step => step.path === path);
+    if (currentStep) {
+      setCurrentStep(currentStep.id);
+    }
+  }, [location.pathname, steps, setCurrentStep]);
+
   return (
     <div>
       <div>
@@ -20,55 +36,24 @@ const Index = () => {
                     <p className="font-[500]">Completion</p>
                   </div>
 
-                  <p className="font-[500]">16%</p>
+                  <p className="font-[500]">{progress}%</p>
                 </div>
 
                 <div className="my-3 border border-[#0E0E0E33] p-3 rounded-[999px]">
-                  <Progress value={16} />
+                  <Progress value={progress} />
                 </div>
               </div>
 
-              <Link to="">
-                <div className="border-b border-black/30 p-5">
-                  <p>Account Info</p>
-                </div>
-              </Link>
-
-              <Link to="personal-information">
-                <div className="border-b border-black/30 p-5">
-                  <p>Personal Information</p>
-                </div>
-              </Link>
-
-              <Link to="address">
-                <div className="border-b border-black/30 p-5">
-                  <p>Address</p>
-                </div>
-              </Link>
-
-              <Link to="bio">
-                <div className="border-b border-black/30 p-5">
-                  <p>Bio</p>
-                </div>
-              </Link>
-
-              <Link to="education">
-                <div className="border-b border-black/30 p-5">
-                  <p>Education</p>
-                </div>
-              </Link>
-
-              <Link to="experience">
-                <div className="border-b border-black/30 p-5">
-                  <p>Experience</p>
-                </div>
-              </Link>
-
-              <Link to="skill">
-                <div className="border-b border-black/30 p-5">
-                  <p>Skill</p>
-                </div>
-              </Link>
+              {steps.map((step) => (
+                <Link key={step.id} to={step.path}>
+                  <div className="border-b border-black/30 p-5 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                    <p className={step.completed ? "text-green-600" : ""}>{step.name}</p>
+                    {step.completed && (
+                      <Icon icon="mdi:check-circle" className="text-green-600 text-xl" />
+                    )}
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
 

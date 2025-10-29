@@ -1,4 +1,5 @@
 import { Icon } from "@iconify/react";
+import { Link } from "react-router";
 
 const Hero = () => {
   return (
@@ -24,12 +25,16 @@ const Hero = () => {
           </p>
 
           <div className="flex items-center gap-3 justify-center my-8">
-            <button className="px-10 py-2 border border-black/30 rounded-md cursor-pointer hover:bg-black/80 ease-in duration-200 hover:text-white">
-              Find a Job
-            </button>
-            <button className="bg-black/80 text-white px-10 py-2 rounded-md cursor-pointer hover:bg-black/90">
-              Non Profit
-            </button>
+            <Link to="/signup">
+              <button className="px-10 py-2 border border-black/30 rounded-md cursor-pointer hover:bg-black/80 ease-in duration-200 hover:text-white">
+                Find a Job
+              </button>
+            </Link>
+            <Link to="/signup">
+              <button className="bg-black/80 text-white px-10 py-2 rounded-md cursor-pointer hover:bg-black/90">
+                Non Profit
+              </button>
+            </Link>
           </div>
         </div>
       </div>
