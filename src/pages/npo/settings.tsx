@@ -54,6 +54,7 @@ const NonprofitSettings = () => {
   const fetchProfileData = async () => {
     try {
       setLoading(true);
+      setError("");
       const profile = await NonprofitService.getProfile();
       const { user } = useAuthStore.getState();
       console.log("📥 Fetched nonprofit profile:", profile);
@@ -92,9 +93,36 @@ const NonprofitSettings = () => {
         softSkills,
         hardSkills,
       });
+      
+      console.log("✅ Profile data loaded successfully");
     } catch (err: any) {
       console.error("❌ Failed to fetch profile:", err);
-      setError("Failed to load profile data");
+      const errorMessage = err?.response?.data?.message || err?.message || "";
+      
+      // If profile not found, it's the first time - that's okay
+      if (errorMessage.includes("not found") || err?.response?.status === 404) {
+        console.log("ℹ️ No profile found yet - this is your first time in settings");
+        setError(""); // Clear error - this is expected
+        
+        // Set default values for new profile
+        const { user } = useAuthStore.getState();
+        setFormData(prev => ({
+          ...prev,
+          companyMail: user?.email || "",
+          orgType: "Non Profit",
+          language: "English",
+          languageProficiency: "Professional",
+        }));
+      } else {
+        // Real error - show it
+        setError(`Unable to load profile data. ${errorMessage}. You can still edit and save.`);
+        
+        // Even on error, set user email if available
+        const { user } = useAuthStore.getState();
+        if (user?.email) {
+          setFormData(prev => ({ ...prev, companyMail: user.email }));
+        }
+      }
     } finally {
       setLoading(false);
     }
