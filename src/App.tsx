@@ -1,5 +1,6 @@
 import LandingPage from "./pages/home/landingPage";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router";
+import { Toaster } from "sonner";
 import Login from "./pages/login";
 import Register from "./pages/register";
 import AuthCallback from "./pages/AuthCallback";
@@ -229,6 +230,7 @@ function App() {
 
   return (
     <div>
+      <Toaster position="top-right" richColors />
       <RouterProvider router={router} />
     </div>
   );
