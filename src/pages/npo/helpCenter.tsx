@@ -16,37 +16,40 @@ const NonprofitHelpCenter = () => {
 
   const faqs = [
     {
-      question: "How secure is my data with Pairova",
-      answer: "Pairova currently supports major cloud storage providers including companies like Google Drive, Amazon, Blue and expand our list of supported devices saved based on needs and data"
+      question: "How do I create and post a job opening?",
+      answer: "To create a job posting, navigate to your dashboard and click 'Post a Job' or 'Create Job'. Fill in the required details including job title, description, requirements, location, and employment type. Once submitted, your job will be published and visible to qualified candidates immediately."
     },
     {
-      question: "Is Pairova completely free",
-      answer: "Pairova offers a free tier for small nonprofit organizations. For larger organizations with advanced needs, we offer premium plans with additional features like advanced analytics, priority support, and custom integrations."
+      question: "Is Pairova free for nonprofit organizations?",
+      answer: "Yes! Pairova offers free access to nonprofit organizations to help them find talented individuals passionate about social impact. We believe in supporting nonprofits in their mission to make a difference by connecting them with the right talent at no cost."
     },
     {
-      question: "What cloud storage does Pairova use",
-      answer: "Pairova currently supports major cloud storage providers including companies like Google Drive, Amazon, Blue and expand our list of supported devices saved based on needs and data"
+      question: "How do I review and manage applications?",
+      answer: "Access your Recruitment Board from the sidebar menu to view all applications organized by status (Applied, Under Review, Interview, Offered). You can review candidate profiles, update application statuses, search for specific applicants, and track your hiring pipeline all in one place."
     },
     {
-      question: "How secure is my data with Pairova",
-      answer: "We use industry-standard encryption (AES-256) for data at rest and TLS 1.3 for data in transit. Your data is stored securely in certified data centers with multiple redundancy layers and regular security audits."
+      question: "Can I edit my organization's profile information?",
+      answer: "Absolutely! Go to Settings from your dashboard sidebar. There you can update your organization name, logo, contact information, mission statement, values, address, and other profile details. Changes are saved immediately and reflected on your job postings."
     },
     {
-      question: "How secure is my data with Pairova",
-      answer: "All user data is encrypted using industry-leading security protocols. We comply with GDPR, SOC 2, and other international security standards to ensure your information remains private and secure."
+      question: "How secure is my organization's data on Pairova?",
+      answer: "We use industry-standard encryption (AES-256) for data at rest and TLS 1.3 for data in transit. Your data is stored securely in certified data centers with multiple redundancy layers. We implement multi-factor authentication, regular security audits, and continuous monitoring to protect your information."
     },
     {
-      question: "How secure is my data with Pairova",
-      answer: "Your data security is our top priority. We implement multi-factor authentication, regular security audits, and continuous monitoring to protect your nonprofit's sensitive information."
+      question: "What information can job seekers see about my organization?",
+      answer: "Job seekers can view your organization name, logo, mission statement, values, location, industry, organization size, and the specific details of your job postings. You control what information is visible through your Settings page. Contact information is only shared with candidates you choose to engage with."
     },
   ];
 
   const messageTypes = [
-    "Support",
-    "How do I create a new account",
-    "Account verification process",
-    "Delete my account",
-    "How do I create a new account",
+    "General Support",
+    "Technical Issue",
+    "Account Setup Help",
+    "Job Posting Question",
+    "Billing & Pricing",
+    "Feature Request",
+    "Report a Problem",
+    "Partnership Inquiry",
   ];
 
   const toggleFaq = (index: number) => {
@@ -131,9 +134,9 @@ const NonprofitHelpCenter = () => {
             <div className="mb-8">
               <h2 className="text-2xl font-semibold mb-2">Frequently Asked Questions</h2>
               <p className="text-gray-600">
-                Find answers to common questions about Pairova features, services and setup.
+                Find answers to common questions about posting jobs, managing applications, and using Pairova's features.
                 <br />
-                For further assistance our support system is always ready to help
+                For further assistance, our support team is always ready to help you succeed.
               </p>
             </div>
 
@@ -177,9 +180,9 @@ const NonprofitHelpCenter = () => {
           <div>
             {/* Contact Form Header */}
             <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-2">Pairova Contact Form</h2>
+              <h2 className="text-2xl font-semibold mb-2">Contact Our Support Team</h2>
               <p className="text-gray-600">
-                Contact us through the message button below. We'll message promptly to your inquiries and feedback
+                Have a question or need assistance? Fill out the form below and our support team will respond to your inquiry within 24 hours.
               </p>
             </div>
 
@@ -218,7 +221,7 @@ const NonprofitHelpCenter = () => {
                       <span className="text-white font-semibold text-lg">pairova</span>
                     </div>
                     <p className="text-white text-xl font-medium leading-relaxed">
-                      Pairova allows non profit organizations promote job roles for users
+                      Connecting nonprofits with talented individuals passionate about making a social impact
                     </p>
                   </div>
                 </div>
@@ -288,7 +291,7 @@ const NonprofitHelpCenter = () => {
                       paddingRight: '40px'
                     }}
                   >
-                    <option value="">Support</option>
+                    <option value="">Select inquiry type...</option>
                     {messageTypes.map((type, index) => (
                       <option key={index} value={type}>
                         {type}
