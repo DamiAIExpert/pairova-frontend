@@ -24,10 +24,17 @@ const NonprofitSettings = () => {
     state: "",
     city: "",
     companyMail: "",
+    phone: "",
     ceo: "",
     foundedOn: "",
     postalCode: "",
     taxId: "",
+    addressLine1: "",
+    addressLine2: "",
+    industry: "",
+    sizeLabel: "",
+    website: "",
+    registrationNumber: "",
     bio: "",
     missionStatement: "",
     values: "",
@@ -54,15 +61,22 @@ const NonprofitSettings = () => {
         state: profile.state || "",
         city: profile.city || "",
         companyMail: user?.email || "",
+        phone: profile.phone || "",
         ceo: "", // TODO: Add CEO field to backend
         foundedOn: profile.foundedOn ? new Date(profile.foundedOn).toISOString().split('T')[0] : "",
         postalCode: profile.postalCode || "",
         taxId: profile.taxId || "",
+        addressLine1: profile.addressLine1 || "",
+        addressLine2: profile.addressLine2 || "",
+        industry: profile.industry || "",
+        sizeLabel: profile.sizeLabel || "",
+        website: profile.website || "",
+        registrationNumber: profile.registrationNumber || "",
         bio: profile.bio || "",
         missionStatement: profile.missionStatement || profile.mission || "",
         values: profile.values || "",
-        policyFileUrl: "",
-        policyFileName: "",
+        policyFileUrl: profile.certificateUrl || "",
+        policyFileName: profile.certificateUrl ? "Policy Document" : "",
       });
       
       console.log("✅ Profile data loaded successfully");
@@ -137,12 +151,20 @@ const NonprofitSettings = () => {
         country: formData.country,
         state: formData.state,
         city: formData.city,
+        phone: formData.phone || undefined,
         foundedOn: formData.foundedOn || undefined,
-        postalCode: formData.postalCode,
-        taxId: formData.taxId,
+        postalCode: formData.postalCode || undefined,
+        taxId: formData.taxId || undefined,
+        addressLine1: formData.addressLine1 || undefined,
+        addressLine2: formData.addressLine2 || undefined,
+        industry: formData.industry || undefined,
+        sizeLabel: formData.sizeLabel || undefined,
+        website: formData.website || undefined,
+        registrationNumber: formData.registrationNumber || undefined,
         bio: formData.bio || undefined,
         missionStatement: formData.missionStatement || undefined,
         values: formData.values || undefined,
+        certificateUrl: formData.policyFileUrl || undefined,
       };
 
       await NonprofitService.updateProfileStep(updateData);
@@ -169,12 +191,10 @@ const NonprofitSettings = () => {
 
   return (
     <div className="min-h-screen bg-white md:mx-5 my-5 rounded-md py-10 px-5">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
 
-        <div className="flex gap-6">
-          {/* Main Content */}
-          <div className="flex-1 space-y-6">
+        <div className="space-y-6">
             {/* My Profile */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h2 className="text-lg font-semibold mb-4">My Profile</h2>
@@ -236,6 +256,27 @@ const NonprofitSettings = () => {
                 </div>
 
                 <div>
+                  <label className="block text-sm text-gray-600 mb-1">Phone Number</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="+1 234 567 8900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Organization Type</label>
+                  <input
+                    type="text"
+                    value={formData.orgType}
+                    onChange={(e) => setFormData(prev => ({ ...prev, orgType: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-sm text-gray-600 mb-1">CEO</label>
                   <input
                     type="text"
@@ -255,6 +296,50 @@ const NonprofitSettings = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Industry</label>
+                  <input
+                    type="text"
+                    value={formData.industry}
+                    onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="e.g., Education, Healthcare"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Organization Size</label>
+                  <input
+                    type="text"
+                    value={formData.sizeLabel}
+                    onChange={(e) => setFormData(prev => ({ ...prev, sizeLabel: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="e.g., 1-10, 11-50, 51-200"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Website</label>
+                  <input
+                    type="url"
+                    value={formData.website}
+                    onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="https://example.org"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Registration Number</label>
+                  <input
+                    type="text"
+                    value={formData.registrationNumber}
+                    onChange={(e) => setFormData(prev => ({ ...prev, registrationNumber: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="REG-123456"
+                  />
+                </div>
               </div>
             </div>
 
@@ -269,6 +354,28 @@ const NonprofitSettings = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-6">
+                <div className="col-span-2">
+                  <label className="block text-sm text-gray-600 mb-1">Address Line 1</label>
+                  <input
+                    type="text"
+                    value={formData.addressLine1}
+                    onChange={(e) => setFormData(prev => ({ ...prev, addressLine1: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="Street address, P.O. box, company name"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-sm text-gray-600 mb-1">Address Line 2 (Optional)</label>
+                  <input
+                    type="text"
+                    value={formData.addressLine2}
+                    onChange={(e) => setFormData(prev => ({ ...prev, addressLine2: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="Apartment, suite, unit, building, floor, etc."
+                  />
+                </div>
+
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">Country</label>
                   <select
@@ -286,23 +393,25 @@ const NonprofitSettings = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">City / State</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={formData.city}
-                      onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                      placeholder="City"
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    />
-                    <input
-                      type="text"
-                      value={formData.state}
-                      onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                      placeholder="State"
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    />
-                  </div>
+                  <label className="block text-sm text-gray-600 mb-1">State</label>
+                  <input
+                    type="text"
+                    value={formData.state}
+                    onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                    placeholder="State / Province / Region"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">City</label>
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                    placeholder="City"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
                 </div>
 
                 <div>
@@ -435,68 +544,6 @@ const NonprofitSettings = () => {
               </button>
             </div>
           </div>
-
-          {/* Notifications Panel */}
-          <div className="w-80 bg-white border border-gray-200 rounded-lg p-6 self-start sticky top-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Notification</h2>
-              <button className="text-gray-400 hover:text-black">
-                <Icon icon="material-symbols:close" className="text-xl" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {/* Sample notifications */}
-              <div className="flex gap-3 pb-4 border-b border-gray-100">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
-                  <Icon icon="lucide:user" className="text-gray-400 text-2xl mt-1" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm">
-                    <span className="font-semibold">Akonbi Esther</span>
-                  </p>
-                  <p className="text-xs text-gray-600 mt-1">
-                    "I have responded to the request sent based on my application. Check message for more information"
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">2 min ago</p>
-                </div>
-                <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-              </div>
-
-              <div className="flex gap-3 pb-4 border-b border-gray-100">
-                <div className="w-10 h-10 rounded-full bg-black flex-shrink-0 flex items-center justify-center">
-                  <Icon icon="lucide:building-2" className="text-white text-lg" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm">
-                    <span className="font-semibold">Third</span>
-                  </p>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Update your <span className="font-semibold">account settings</span> to get more views
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">2 min ago</p>
-                </div>
-                <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-              </div>
-
-              <div className="flex gap-3 pb-4">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
-                  <Icon icon="lucide:user" className="text-gray-400 text-2xl mt-1" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm">
-                    <span className="font-semibold">Taiwo Musa</span>
-                  </p>
-                  <p className="text-xs text-gray-600 mt-1">
-                    You have a message from Taiwo Atụ. Check your <span className="font-semibold">message</span> for more information
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">1 hour ago</p>
-                </div>
-                <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Success/Error Messages */}
         {successMessage && (
