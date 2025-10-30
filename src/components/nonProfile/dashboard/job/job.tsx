@@ -22,16 +22,15 @@ const Job = () => {
       setLoading(true);
       setError("");
       
-      // Fetch jobs created by this nonprofit
-      const result = await JobsService.getJobs({
-        // The backend should filter by authenticated nonprofit user
+      // Fetch jobs created by this nonprofit using nonprofit-specific endpoint
+      const result = await JobsService.getNonprofitJobs({
         page: 1,
         limit: 100,
       });
       
       // Ensure we always set an array, even if result.jobs is undefined
       setJobs(result?.jobs || []);
-      console.log(`✅ Fetched ${(result?.jobs || []).length} jobs`);
+      console.log(`✅ Fetched ${(result?.jobs || []).length} jobs for nonprofit`);
     } catch (err: any) {
       console.error("❌ Failed to fetch jobs:", err);
       setError(err.message || "Failed to load jobs");
@@ -46,7 +45,7 @@ const Job = () => {
     if (!confirm("Are you sure you want to delete this job?")) return;
 
     try {
-      await JobsService.deleteJob(jobId);
+      await JobsService.deleteNonprofitJob(jobId);
       console.log("✅ Job deleted successfully");
       // Remove from local state
       setJobs((jobs || []).filter(job => job.id !== jobId));

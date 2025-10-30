@@ -152,6 +152,31 @@ export class JobsService {
     await apiClient.delete(`/jobs/${jobId}`);
   }
 
+  // Nonprofit-specific job management
+  static async getNonprofitJobs(params: JobSearchParams = {}): Promise<JobSearchResult> {
+    const response = await apiClient.get<JobSearchResult>('/ngos/me/jobs', params);
+    return response.data;
+  }
+
+  static async getNonprofitJob(jobId: string): Promise<Job> {
+    const response = await apiClient.get<Job>(`/ngos/me/jobs/${jobId}`);
+    return response.data;
+  }
+
+  static async createNonprofitJob(jobData: CreateJobRequest): Promise<Job> {
+    const response = await apiClient.post<Job>('/ngos/me/jobs', jobData);
+    return response.data;
+  }
+
+  static async updateNonprofitJob(jobId: string, jobData: Partial<CreateJobRequest>): Promise<Job> {
+    const response = await apiClient.put<Job>(`/ngos/me/jobs/${jobId}`, jobData);
+    return response.data;
+  }
+
+  static async deleteNonprofitJob(jobId: string): Promise<void> {
+    await apiClient.delete(`/ngos/me/jobs/${jobId}`);
+  }
+
   static async publishJob(jobId: string): Promise<Job> {
     const response = await apiClient.patch<Job>(`/jobs/${jobId}/publish`);
     return response.data;

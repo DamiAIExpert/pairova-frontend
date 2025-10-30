@@ -102,7 +102,7 @@ const CreateJob = () => {
         status: "PUBLISHED" as const,
       };
 
-      await JobsService.createJob(jobData);
+      await JobsService.createNonprofitJob(jobData);
       
       toast.success("Job posted successfully!");
       
