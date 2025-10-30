@@ -1,13 +1,13 @@
 import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
-import { applicationsService, type JobApplication } from "@/services/applications.service";
+import { applicationsService, type Application } from "@/services/applications.service";
 import { JobsService, type Job } from "@/services/jobs.service";
 
 const Board = () => {
   const [loading, setLoading] = useState(true);
-  const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [applications, setApplications] = useState<Application[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [activeStatus, setActiveStatus] = useState<string>("APPLIED");
+  const [activeStatus, setActiveStatus] = useState<string>("PENDING");
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddCandidate, setShowAddCandidate] = useState(false);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -68,10 +68,11 @@ const Board = () => {
   const getStatusCounts = () => {
     // In a real implementation, you'd fetch these counts from the backend
     return {
-      APPLIED: applications.filter(app => app.status === 'APPLIED').length,
-      UNDER_REVIEW: applications.filter(app => app.status === 'UNDER_REVIEW').length,
-      INTERVIEW: applications.filter(app => app.status === 'INTERVIEW').length,
-      OFFERED: applications.filter(app => app.status === 'OFFERED').length,
+      PENDING: applications.filter(app => app.status === 'PENDING').length,
+      REVIEWED: applications.filter(app => app.status === 'REVIEWED').length,
+      SHORTLISTED: applications.filter(app => app.status === 'SHORTLISTED').length,
+      INTERVIEWED: applications.filter(app => app.status === 'INTERVIEWED').length,
+      ACCEPTED: applications.filter(app => app.status === 'ACCEPTED').length,
     };
   };
 
@@ -87,7 +88,7 @@ const Board = () => {
 
   const getQualifiedCount = () => {
     return applications.filter(app => 
-      ['UNDER_REVIEW', 'INTERVIEW', 'OFFERED'].includes(app.status)
+      ['REVIEWED', 'SHORTLISTED', 'INTERVIEWED', 'ACCEPTED'].includes(app.status)
     ).length;
   };
 
@@ -192,14 +193,14 @@ const Board = () => {
         {/* Status Tabs */}
         <div className="flex flex-wrap lg:flex-nowrap gap-4 bg-white py-1 px-1 rounded-md">
           <button
-            onClick={() => setActiveStatus("APPLIED")}
+            onClick={() => setActiveStatus("PENDING")}
             className={`flex items-center justify-between rounded-md px-3 py-2 w-full ${
-              activeStatus === "APPLIED"
+              activeStatus === "PENDING"
                 ? "bg-black text-white"
                 : "text-[#C1C1C1]"
             }`}
           >
-            Applied Job ({statusCounts.APPLIED}){" "}
+            Pending ({statusCounts.PENDING}){" "}
             <Icon
               icon="material-symbols-light:add-box"
               className="text-2xl cursor-pointer"
@@ -211,14 +212,14 @@ const Board = () => {
           </button>
 
           <button
-            onClick={() => setActiveStatus("UNDER_REVIEW")}
+            onClick={() => setActiveStatus("REVIEWED")}
             className={`flex items-center justify-between rounded-md px-3 py-2 w-full ${
-              activeStatus === "UNDER_REVIEW"
+              activeStatus === "REVIEWED"
                 ? "bg-black text-white"
                 : "text-[#C1C1C1]"
             }`}
           >
-            Under Review ({statusCounts.UNDER_REVIEW}){" "}
+            Reviewed ({statusCounts.REVIEWED}){" "}
             <Icon
               icon="material-symbols-light:add-box"
               className="text-2xl cursor-pointer"
@@ -230,14 +231,14 @@ const Board = () => {
           </button>
 
           <button
-            onClick={() => setActiveStatus("INTERVIEW")}
+            onClick={() => setActiveStatus("SHORTLISTED")}
             className={`flex items-center justify-between rounded-md px-3 py-2 w-full ${
-              activeStatus === "INTERVIEW"
+              activeStatus === "SHORTLISTED"
                 ? "bg-black text-white"
                 : "text-[#C1C1C1]"
             }`}
           >
-            Interview ({statusCounts.INTERVIEW}){" "}
+            Shortlisted ({statusCounts.SHORTLISTED}){" "}
             <Icon
               icon="material-symbols-light:add-box"
               className="text-2xl cursor-pointer"
@@ -249,14 +250,33 @@ const Board = () => {
           </button>
 
           <button
-            onClick={() => setActiveStatus("OFFERED")}
+            onClick={() => setActiveStatus("INTERVIEWED")}
             className={`flex items-center justify-between rounded-md px-3 py-2 w-full ${
-              activeStatus === "OFFERED"
+              activeStatus === "INTERVIEWED"
                 ? "bg-black text-white"
                 : "text-[#C1C1C1]"
             }`}
           >
-            Hiring Jobs ({statusCounts.OFFERED}){" "}
+            Interviewed ({statusCounts.INTERVIEWED}){" "}
+            <Icon
+              icon="material-symbols-light:add-box"
+              className="text-2xl cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowAddCandidate(true);
+              }}
+            />
+          </button>
+
+          <button
+            onClick={() => setActiveStatus("ACCEPTED")}
+            className={`flex items-center justify-between rounded-md px-3 py-2 w-full ${
+              activeStatus === "ACCEPTED"
+                ? "bg-black text-white"
+                : "text-[#C1C1C1]"
+            }`}
+          >
+            Accepted ({statusCounts.ACCEPTED}){" "}
             <Icon
               icon="material-symbols-light:add-box"
               className="text-2xl cursor-pointer"

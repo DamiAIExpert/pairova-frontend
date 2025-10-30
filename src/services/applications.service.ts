@@ -1,12 +1,12 @@
 import { apiClient } from './api';
 
 export interface ApplicationStatus {
-  APPLIED: 'APPLIED';
-  UNDER_REVIEW: 'UNDER_REVIEW';
-  INTERVIEW: 'INTERVIEW';
-  OFFERED: 'OFFERED';
+  PENDING: 'PENDING';
+  REVIEWED: 'REVIEWED';
+  SHORTLISTED: 'SHORTLISTED';
+  INTERVIEWED: 'INTERVIEWED';
+  ACCEPTED: 'ACCEPTED';
   REJECTED: 'REJECTED';
-  WITHDRAWN: 'WITHDRAWN';
 }
 
 export interface Application {
@@ -58,10 +58,11 @@ export interface ApplicationsResponse {
 
 export interface ApplicationStatistics {
   totalApplications: number;
-  appliedApplications: number;
-  underReviewApplications: number;
-  interviewApplications: number;
-  offeredApplications: number;
+  pendingApplications: number;
+  reviewedApplications: number;
+  shortlistedApplications: number;
+  interviewedApplications: number;
+  acceptedApplications: number;
   rejectedApplications: number;
   applicationsThisMonth: number;
 }
