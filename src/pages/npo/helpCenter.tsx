@@ -1,5 +1,7 @@
 import { Icon } from "@iconify/react";
 import { useState } from "react";
+import { supportService } from "@/services/support.service";
+import { toast } from "sonner";
 
 const NonprofitHelpCenter = () => {
   const [activeTab, setActiveTab] = useState<"faq" | "contact">("faq");
@@ -64,12 +66,21 @@ const NonprofitHelpCenter = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation
+    if (!formData.fullName || !formData.email || !formData.phone || !formData.messageType || !formData.message) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
     setSending(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Contact form submitted:", formData);
-      alert("Your message has been sent successfully! We'll get back to you soon.");
+    try {
+      await supportService.submitContactForm(formData);
+      
+      toast.success("Message sent successfully! We'll get back to you within 24 hours.");
+      
+      // Reset form
       setFormData({
         fullName: "",
         email: "",
@@ -77,8 +88,12 @@ const NonprofitHelpCenter = () => {
         messageType: "",
         message: "",
       });
+    } catch (error: any) {
+      console.error("Failed to submit contact form:", error);
+      toast.error(error?.message || "Failed to send message. Please try again.");
+    } finally {
       setSending(false);
-    }, 1500);
+    }
   };
 
   return (

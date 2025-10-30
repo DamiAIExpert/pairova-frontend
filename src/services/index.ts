@@ -6,3 +6,4 @@ export { AuthService, type AuthResponse, type LoginRequest, type RegisterRequest
 export { JobsService, type Job, type CreateJobRequest, type JobSearchParams, type JobSearchResult, type Application, JobPlacement, EmploymentType, JobStatus, ApplicationStatus } from './jobs.service';
 export { NotificationsService, type Notification, type NotificationPreferences, type NotificationStats, NotificationType } from './notifications.service';
 export { applicationsService, type Application as JobApplication, type ApplicationsResponse, type ApplicationStatistics, type ApplicationPipeline } from './applications.service';
+export { supportService, type CreateContactRequest, type ContactResponse, FeedbackCategory } from './support.service';
