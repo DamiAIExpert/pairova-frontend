@@ -1,4 +1,6 @@
 import { Icon } from "@iconify/react";
+import { useState } from "react";
+import { useNavigate } from "react-router";
 import {
   Select,
   SelectContent,
@@ -8,177 +10,384 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { JobsService, EmploymentType, JobPlacement } from "@/services/jobs.service";
+import { toast } from "sonner";
+import { countries } from "@/utils/countries";
 
 const CreateJob = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    employmentType: [] as EmploymentType[],
+    placement: "" as JobPlacement | "",
+    experience: "",
+    salaryMin: "",
+    salaryMax: "",
+    currency: "USD",
+    teamSize: "",
+    locationCity: "",
+    locationCountry: "",
+    locationState: "",
+    postalCode: "",
+  });
+
+  const employmentTypes: { value: EmploymentType; label: string; icon: string }[] = [
+    { value: "FULL_TIME", label: "Full Time", icon: "hugeicons:stop-watch" },
+    { value: "PART_TIME", label: "Part Time", icon: "lucide:clock" },
+    { value: "CONTRACT", label: "Contract", icon: "lucide:notebook-tabs" },
+    { value: "VOLUNTEER", label: "Volunteer", icon: "la:handshake-solid" },
+    { value: "INTERNSHIP", label: "Internship", icon: "lucide:graduation-cap" },
+  ];
+
+  const toggleEmploymentType = (type: EmploymentType) => {
+    setFormData(prev => ({
+      ...prev,
+      employmentType: prev.employmentType.includes(type)
+        ? prev.employmentType.filter(t => t !== type)
+        : [...prev.employmentType, type],
+    }));
+  };
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validation
+    if (!formData.title.trim()) {
+      toast.error("Please enter a job title");
+      return;
+    }
+
+    if (!formData.description.trim()) {
+      toast.error("Please enter a job description");
+      return;
+    }
+
+    if (formData.employmentType.length === 0) {
+      toast.error("Please select at least one employment type");
+      return;
+    }
+
+    if (!formData.placement) {
+      toast.error("Please select job placement");
+      return;
+    }
+
+    if (!formData.locationCity || !formData.locationCountry) {
+      toast.error("Please enter location details");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const jobData = {
+        title: formData.title,
+        description: formData.description,
+        employmentType: formData.employmentType[0], // Use first selected type as primary
+        placement: formData.placement as JobPlacement,
+        experienceRequired: formData.experience || undefined,
+        salaryMin: formData.salaryMin ? parseFloat(formData.salaryMin) : undefined,
+        salaryMax: formData.salaryMax ? parseFloat(formData.salaryMax) : undefined,
+        currency: formData.currency,
+        locationCity: formData.locationCity,
+        locationCountry: formData.locationCountry,
+        locationState: formData.locationState || undefined,
+        postalCode: formData.postalCode || undefined,
+        status: "PUBLISHED" as const,
+      };
+
+      await JobsService.createJob(jobData);
+      
+      toast.success("Job posted successfully!");
+      
+      // Navigate to jobs list after a short delay
+      setTimeout(() => {
+        navigate("/non-profit");
+      }, 1500);
+      
+    } catch (error: any) {
+      console.error("Failed to create job:", error);
+      toast.error(error?.message || "Failed to create job. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isBasicInfoComplete = formData.title.trim() && formData.description.trim();
+  const isAdditionalInfoComplete = formData.employmentType.length > 0 && formData.placement && formData.locationCity && formData.locationCountry;
+
   return (
-    <div>
-      <div className="min-h-screen bg-white mx-5 my-5 rounded-m border border-black/30">
+    <form onSubmit={handleSubmit}>
+      <div className="min-h-screen bg-white mx-5 my-5 rounded-md border border-black/30">
         {/* Basic Information */}
-        <div className="px-5 py-10 border-b border-black/30 ">
+        <div className="px-5 py-10 border-b border-black/30">
           <div className="flex items-center justify-between">
             <h4 className="text-lg font-semibold">Basic Information</h4>
-            <Icon icon="ic:baseline-check-circle" className="text-2xl" />
+            <Icon 
+              icon="ic:baseline-check-circle" 
+              className={`text-2xl ${isBasicInfoComplete ? 'text-green-500' : 'text-black/30'}`}
+            />
           </div>
 
           <div>
             <div className="my-5">
-              <label htmlFor="" className="text-[#797979]">
-                Job Title
+              <label htmlFor="title" className="text-[#797979]">
+                Job Title <span className="text-red-500">*</span>
               </label>
               <input
+                id="title"
                 type="text"
-                className="py-3 px-4 border border-black/30 rounded-md w-full my-3"
-                placeholder="Enter Job Title..."
+                value={formData.title}
+                onChange={(e) => handleInputChange("title", e.target.value)}
+                className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="e.g., Program Officer"
+                required
               />
             </div>
 
             <div className="my-5">
-              <label htmlFor="" className="text-[#797979]">
-                Role Description
+              <label htmlFor="description" className="text-[#797979]">
+                Role Description <span className="text-red-500">*</span>
               </label>
               <textarea
-                name=""
-                id=""
-                className="py-3 px-4 border border-black/30 rounded-md w-full my-3"
-                rows={3}
-                placeholder="Enter Job Description..."
+                id="description"
+                value={formData.description}
+                onChange={(e) => handleInputChange("description", e.target.value)}
+                className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
+                rows={8}
+                placeholder="Describe the role, responsibilities, qualifications, and what makes this opportunity unique..."
+                required
               ></textarea>
             </div>
           </div>
         </div>
 
         {/* Additional Information */}
-
         <div className="px-5 py-10">
           <div className="flex items-center justify-between">
             <h4 className="text-lg font-semibold">Additional Information</h4>
             <Icon
               icon="ic:baseline-check-circle"
-              className="text-2xl text-black/30"
+              className={`text-2xl ${isAdditionalInfoComplete ? 'text-green-500' : 'text-black/30'}`}
             />
           </div>
 
           <div className="my-5">
-            <h5>Employment Type</h5>
+            <h5 className="mb-2">
+              Employment Type <span className="text-red-500">*</span>
+            </h5>
             <div className="flex flex-wrap items-center gap-3 my-3">
-              <button className="flex items-center gap-2 text-sm border border-black/30 rounded-md hover:bg-black/10 px-5 py-2">
-                <Icon icon="hugeicons:stop-watch" className="" /> Full Time
-              </button>
-
-              <button className="flex items-center gap-2 text-sm border border-black/30 rounded-md hover:bg-black/10 px-5 py-2">
-                <Icon icon="lucide:globe-lock" className="" /> Freelance
-              </button>
-
-              <button className="flex items-center gap-2 text-sm border border-black/30 rounded-md hover:bg-black/10 px-5 py-2">
-                <Icon icon="lucide:notebook-tabs" className="" /> Contract
-              </button>
-
-              <button className="flex items-center gap-2 text-sm border border-black/30 rounded-md hover:bg-black/10 px-5 py-2">
-                <Icon icon="la:handshake-solid" className="" /> Volunteer
-              </button>
+              {employmentTypes.map((type) => (
+                <button
+                  key={type.value}
+                  type="button"
+                  onClick={() => toggleEmploymentType(type.value)}
+                  className={`flex items-center gap-2 text-sm border rounded-md px-5 py-2 transition-colors ${
+                    formData.employmentType.includes(type.value)
+                      ? "bg-black text-white border-black"
+                      : "border-black/30 hover:bg-black/10"
+                  }`}
+                >
+                  <Icon icon={type.icon} />
+                  {type.label}
+                </button>
+              ))}
             </div>
+            {formData.employmentType.length > 0 && (
+              <p className="text-xs text-gray-500 mt-2">
+                Selected: {formData.employmentType.map(t => employmentTypes.find(et => et.value === t)?.label).join(", ")}
+              </p>
+            )}
           </div>
 
           <div className="grid my-10 grid-cols-1 md:grid-cols-2 gap-5">
             <div className="w-full">
-              <label htmlFor="">Job Placement</label>
-              <Select>
+              <label htmlFor="placement">
+                Job Placement <span className="text-red-500">*</span>
+              </label>
+              <Select value={formData.placement} onValueChange={(value) => handleInputChange("placement", value)}>
                 <SelectTrigger className="py-[23px] px-4 border border-black/30 rounded-md w-full my-3">
-                  <SelectValue placeholder="Job Placement" />
+                  <SelectValue placeholder="Select job placement" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Job Placement</SelectLabel>
-                    <SelectItem value="NIgeria">Onsite</SelectItem>
-                    <SelectItem value="Ghana">Remote</SelectItem>
-                    <SelectItem value="Ghana">Hybrid</SelectItem>
+                    <SelectItem value="ONSITE">Onsite</SelectItem>
+                    <SelectItem value="REMOTE">Remote</SelectItem>
+                    <SelectItem value="HYBRID">Hybrid</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="w-full">
-              <label htmlFor="">Experience</label>
+              <label htmlFor="experience">Experience Required</label>
               <input
+                id="experience"
                 type="text"
-                className="py-3 px-4 border border-black/30 rounded-md w-full my-3"
-                placeholder="4 - 6 years"
+                value={formData.experience}
+                onChange={(e) => handleInputChange("experience", e.target.value)}
+                className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="e.g., 4-6 years"
               />
             </div>
 
             <div className="w-full">
-              <label htmlFor="">Select Range</label>
-              <Select>
-                <SelectTrigger className="py-[23px] px-4 border border-black/30 rounded-md w-full my-3">
-                  <SelectValue placeholder="Select Salary Range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Salary Range</SelectLabel>
-                    <SelectItem value="NIgeria">$1000 - $10000</SelectItem>
-                    <SelectItem value="NIgeria">$10000 - $20000</SelectItem>
-                    <SelectItem value="Ghana">$20000 upwards</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              <label htmlFor="salaryMin">Salary Range (Min)</label>
+              <div className="flex gap-2 my-3">
+                <Select value={formData.currency} onValueChange={(value) => handleInputChange("currency", value)}>
+                  <SelectTrigger className="w-[120px] py-[23px] px-4 border border-black/30 rounded-md">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD ($)</SelectItem>
+                    <SelectItem value="GBP">GBP (£)</SelectItem>
+                    <SelectItem value="EUR">EUR (€)</SelectItem>
+                    <SelectItem value="NGN">NGN (₦)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <input
+                  id="salaryMin"
+                  type="number"
+                  value={formData.salaryMin}
+                  onChange={(e) => handleInputChange("salaryMin", e.target.value)}
+                  className="flex-1 py-3 px-4 border border-black/30 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  placeholder="1000"
+                />
+              </div>
             </div>
 
             <div className="w-full">
-              <label htmlFor="">Size</label>
+              <label htmlFor="salaryMax">Salary Range (Max)</label>
               <input
+                id="salaryMax"
+                type="number"
+                value={formData.salaryMax}
+                onChange={(e) => handleInputChange("salaryMax", e.target.value)}
+                className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="10000"
+              />
+            </div>
+
+            <div className="w-full md:col-span-2">
+              <label htmlFor="teamSize">Team Size (Optional)</label>
+              <input
+                id="teamSize"
                 type="text"
-                className="py-3 px-4 border border-black/30 rounded-md w-full my-3"
-                placeholder="1000 - 5000 employees"
+                value={formData.teamSize}
+                onChange={(e) => handleInputChange("teamSize", e.target.value)}
+                className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="e.g., 10-20 people"
               />
             </div>
           </div>
 
           {/* Location */}
-
           <div>
-            <h5 className="font-[500] text-black/40">Location</h5>
+            <h5 className="font-[500] text-black/40 mb-4">
+              Location <span className="text-red-500">*</span>
+            </h5>
 
             <div className="grid my-5 grid-cols-1 md:grid-cols-2 gap-5">
               <div className="w-full">
-                <label htmlFor="">City</label>
+                <label htmlFor="country">
+                  Country <span className="text-red-500">*</span>
+                </label>
+                <Select value={formData.locationCountry} onValueChange={(value) => handleInputChange("locationCountry", value)}>
+                  <SelectTrigger className="py-[23px] px-4 border border-black/30 rounded-md w-full my-3">
+                    <SelectValue placeholder="Select country" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    <SelectGroup>
+                      <SelectLabel>Countries</SelectLabel>
+                      {countries.map((country) => (
+                        <SelectItem key={country.code} value={country.code}>
+                          {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full">
+                <label htmlFor="state">Province / State</label>
                 <input
+                  id="state"
                   type="text"
-                  className="py-3 px-4 border border-black/30 rounded-md w-full my-3"
-                  placeholder="Enter City"
+                  value={formData.locationState}
+                  onChange={(e) => handleInputChange("locationState", e.target.value)}
+                  className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
+                  placeholder="e.g., London"
                 />
               </div>
 
               <div className="w-full">
-                <label htmlFor="">Country</label>
+                <label htmlFor="city">
+                  City <span className="text-red-500">*</span>
+                </label>
                 <input
+                  id="city"
                   type="text"
-                  className="py-3 px-4 border border-black/30 rounded-md w-full my-3"
-                  placeholder="Enter Country"
+                  value={formData.locationCity}
+                  onChange={(e) => handleInputChange("locationCity", e.target.value)}
+                  className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
+                  placeholder="e.g., London"
+                  required
                 />
               </div>
 
               <div className="w-full">
-                <label htmlFor="">Provinnce / State</label>
+                <label htmlFor="postalCode">Postal Code</label>
                 <input
+                  id="postalCode"
                   type="text"
-                  className="py-3 px-4 border border-black/30 rounded-md w-full my-3"
-                  placeholder="Enter Provinve / State"
-                />
-              </div>
-
-              <div className="w-full">
-                <label htmlFor="">Postal Code</label>
-                <input
-                  type="text"
-                  className="py-3 px-4 border border-black/30 rounded-md w-full my-3"
-                  placeholder="ex 111901"
+                  value={formData.postalCode}
+                  onChange={(e) => handleInputChange("postalCode", e.target.value)}
+                  className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
+                  placeholder="e.g., WC1N 3AX"
                 />
               </div>
             </div>
           </div>
+
+          {/* Submit Buttons */}
+          <div className="flex items-center gap-4 justify-end mt-10 pt-6 border-t border-black/30">
+            <button
+              type="button"
+              onClick={() => navigate("/non-profit")}
+              className="px-8 py-3 border border-black/30 rounded-md hover:bg-black/5 transition-colors"
+              disabled={loading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-8 py-3 bg-black text-white rounded-md hover:bg-black/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Icon icon="material-symbols:add" className="text-xl" />
+                  Post Job
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 };
 
