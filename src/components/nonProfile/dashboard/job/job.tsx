@@ -29,8 +29,18 @@ const Job = () => {
       });
       
       // Ensure we always set an array, even if result.jobs is undefined
-      setJobs(result?.jobs || []);
-      console.log(`✅ Fetched ${(result?.jobs || []).length} jobs for nonprofit`);
+      const fetchedJobs = result?.jobs || [];
+      setJobs(fetchedJobs);
+      
+      console.log(`✅ Fetched ${fetchedJobs.length} jobs for nonprofit`);
+      if (fetchedJobs.length > 0) {
+        console.log('📋 Sample job data:', {
+          title: fetchedJobs[0].title,
+          hasOrganization: !!fetchedJobs[0].organization,
+          organizationLogo: fetchedJobs[0].organization?.logoUrl,
+          organizationName: fetchedJobs[0].organization?.orgName,
+        });
+      }
     } catch (err: any) {
       console.error("❌ Failed to fetch jobs:", err);
       setError(err.message || "Failed to load jobs");
@@ -159,11 +169,21 @@ const Job = () => {
               <div key={job.id} className="border border-black/30 rounded-md py-5 px-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <img
-                      src={job.nonprofit?.logoUrl || "/Images/notify.svg"}
-                      alt={job.nonprofit?.orgName || "Organization"}
-                      className="w-[80px] h-[80px] object-cover rounded"
-                    />
+                    {(job.organization?.logoUrl || job.nonprofit?.logoUrl) ? (
+                      <img
+                        src={job.organization?.logoUrl || job.nonprofit?.logoUrl}
+                        alt={job.organization?.orgName || job.nonprofit?.orgName || "Organization"}
+                        className="w-[80px] h-[80px] object-contain rounded"
+                        onError={(e) => {
+                          const img = e.target as HTMLImageElement;
+                          img.src = "/Images/notify.svg";
+                        }}
+                      />
+                    ) : (
+                      <div className="w-[80px] h-[80px] bg-gray-100 rounded flex items-center justify-center">
+                        <Icon icon="lucide:building-2" className="text-4xl text-gray-400" />
+                      </div>
+                    )}
                   </div>
 
                   <div>

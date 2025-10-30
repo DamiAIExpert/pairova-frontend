@@ -29,21 +29,16 @@ const Header = () => {
             <div className="cursor-pointer">
               {!brandLogoError ? (
                 <img 
-                  src="/Images/logo.svg" 
+                  src="/Images/logo.AVIF" 
                   alt="Pairova" 
-                  className="w-[120px] h-[40px]"
-                  onError={(e) => {
-                    console.error("Failed to load brand logo from /Images/logo.svg, trying AVIF...");
-                    const img = e.target as HTMLImageElement;
-                    if (img.src.includes('logo.svg')) {
-                      img.src = '/Images/logo.AVIF';
-                    } else {
-                      setBrandLogoError(true);
-                    }
+                  className="w-[100px]"
+                  onError={() => {
+                    console.error("Failed to load Pairova brand logo from /Images/logo.AVIF");
+                    setBrandLogoError(true);
                   }}
                 />
               ) : (
-                <div className="w-[120px] h-[40px] flex items-center justify-center text-2xl font-bold text-black border border-black/20 rounded px-3">
+                <div className="w-[100px] h-[40px] flex items-center justify-center text-xl font-bold text-black border border-black/20 rounded px-2">
                   PAIROVA
                 </div>
               )}

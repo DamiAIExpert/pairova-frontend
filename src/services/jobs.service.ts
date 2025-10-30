@@ -18,8 +18,15 @@ export interface Job {
   salaryMax?: number;
   currency?: string;
   status: JobStatus;
-  nonprofitId: string;
-  nonprofit: {
+  orgUserId?: string;
+  organization?: {
+    id?: string;
+    userId?: string;
+    orgName: string;
+    logoUrl?: string;
+  };
+  // Legacy support - map organization to nonprofit
+  nonprofit?: {
     id: string;
     orgName: string;
     logoUrl?: string;
