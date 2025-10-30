@@ -16,27 +16,27 @@ const NonprofitHelpCenter = () => {
 
   const faqs = [
     {
-      question: "How secure is my data with Third",
-      answer: "Third currently supports major cloud storage providers including companies like Google Drive, Amazon, Blue and expand our list of supported devices saved based on needs and data"
+      question: "How secure is my data with Pairova",
+      answer: "Pairova currently supports major cloud storage providers including companies like Google Drive, Amazon, Blue and expand our list of supported devices saved based on needs and data"
     },
     {
-      question: "Is Third completely free",
-      answer: "Third offers a free tier for small nonprofit organizations. For larger organizations with advanced needs, we offer premium plans with additional features like advanced analytics, priority support, and custom integrations."
+      question: "Is Pairova completely free",
+      answer: "Pairova offers a free tier for small nonprofit organizations. For larger organizations with advanced needs, we offer premium plans with additional features like advanced analytics, priority support, and custom integrations."
     },
     {
-      question: "What cloud storage does Third use",
-      answer: "Third currently supports major cloud storage providers including companies like Google Drive, Amazon, Blue and expand our list of supported devices saved based on needs and data"
+      question: "What cloud storage does Pairova use",
+      answer: "Pairova currently supports major cloud storage providers including companies like Google Drive, Amazon, Blue and expand our list of supported devices saved based on needs and data"
     },
     {
-      question: "How secure is my data with Third",
+      question: "How secure is my data with Pairova",
       answer: "We use industry-standard encryption (AES-256) for data at rest and TLS 1.3 for data in transit. Your data is stored securely in certified data centers with multiple redundancy layers and regular security audits."
     },
     {
-      question: "How secure is my data with Third",
+      question: "How secure is my data with Pairova",
       answer: "All user data is encrypted using industry-leading security protocols. We comply with GDPR, SOC 2, and other international security standards to ensure your information remains private and secure."
     },
     {
-      question: "How secure is my data with Third",
+      question: "How secure is my data with Pairova",
       answer: "Your data security is our top priority. We implement multi-factor authentication, regular security audits, and continuous monitoring to protect your nonprofit's sensitive information."
     },
   ];
@@ -131,7 +131,7 @@ const NonprofitHelpCenter = () => {
             <div className="mb-8">
               <h2 className="text-2xl font-semibold mb-2">Frequently Asked Questions</h2>
               <p className="text-gray-600">
-                Find answers to common questions about Third features, services and setup.
+                Find answers to common questions about Pairova features, services and setup.
                 <br />
                 For further assistance our support system is always ready to help
               </p>
@@ -177,7 +177,7 @@ const NonprofitHelpCenter = () => {
           <div>
             {/* Contact Form Header */}
             <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-2">Third Contact Form</h2>
+              <h2 className="text-2xl font-semibold mb-2">Pairova Contact Form</h2>
               <p className="text-gray-600">
                 Contact us through the message button below. We'll message promptly to your inquiries and feedback
               </p>
@@ -200,13 +200,25 @@ const NonprofitHelpCenter = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-8">
                   <div className="mb-6">
                     <div className="flex items-center gap-2 mb-4">
-                      <div className="bg-white p-1.5 rounded">
-                        <Icon icon="mdi:alpha-t-box" className="text-2xl text-black" />
+                      <div className="bg-white p-2 rounded">
+                        <img 
+                          src="/Images/logo-black.png" 
+                          alt="Pairova" 
+                          className="h-6 w-auto"
+                          onError={(e) => {
+                            // Fallback to text if logo doesn't load
+                            e.currentTarget.style.display = 'none';
+                            const textSpan = document.createElement('span');
+                            textSpan.textContent = 'P';
+                            textSpan.className = 'text-2xl font-bold text-black';
+                            e.currentTarget.parentElement!.appendChild(textSpan);
+                          }}
+                        />
                       </div>
-                      <span className="text-white font-semibold text-lg">third</span>
+                      <span className="text-white font-semibold text-lg">pairova</span>
                     </div>
                     <p className="text-white text-xl font-medium leading-relaxed">
-                      Third allows non profit organizations promote job roles for users
+                      Pairova allows non profit organizations promote job roles for users
                     </p>
                   </div>
                 </div>
