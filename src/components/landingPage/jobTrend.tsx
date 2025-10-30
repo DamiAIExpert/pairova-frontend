@@ -14,10 +14,23 @@ const JobTrend = () => {
       try {
         setLoading(true);
         const result = await JobsService.getTrendingJobs({ page: 1, limit: 3 });
-        setJobs(result.jobs || []);
+        const fetchedJobs = result.jobs || [];
+        setJobs(fetchedJobs);
         setError(null);
+        
+        console.log(`✅ Fetched ${fetchedJobs.length} trending jobs for landing page`);
+        if (fetchedJobs.length > 0) {
+          console.log('📋 Sample job data:', {
+            title: fetchedJobs[0].title,
+            hasOrganization: !!fetchedJobs[0].organization,
+            organizationLogo: fetchedJobs[0].organization?.logoUrl,
+            organizationName: fetchedJobs[0].organization?.orgName,
+            hasNonprofit: !!fetchedJobs[0].nonprofit,
+            nonprofitLogo: fetchedJobs[0].nonprofit?.logoUrl,
+          });
+        }
       } catch (err: any) {
-        console.error("Error fetching trending jobs:", err);
+        console.error("❌ Error fetching trending jobs:", err);
         setError(err.message || "Failed to load trending jobs");
       } finally {
         setLoading(false);
@@ -87,26 +100,35 @@ const JobTrend = () => {
                 <div key={job.id} className="bg-white rounded-md px-5 py-5 flex-1">
                   <div className="flex items-center justify-between">
                     <div className="flex gap-3">
-                      {job.nonprofit?.logoUrl ? (
+                      {(job.orgLogoUrl || job.organization?.logoUrl || job.nonprofit?.logoUrl) ? (
                         <img
-                          src={job.nonprofit.logoUrl}
-                          alt={job.nonprofit.orgName || "Organization"}
-                          className="w-[50px] h-[50px] object-cover rounded"
+                          src={job.orgLogoUrl || job.organization?.logoUrl || job.nonprofit?.logoUrl}
+                          alt={job.orgName || job.organization?.orgName || job.nonprofit?.orgName || "Organization"}
+                          className="w-[50px] h-[50px] object-contain rounded bg-white p-1"
+                          onError={(e) => {
+                            const img = e.target as HTMLImageElement;
+                            img.style.display = 'none';
+                            if (img.nextElementSibling) {
+                              (img.nextElementSibling as HTMLElement).style.display = 'flex';
+                            }
+                          }}
                         />
-                      ) : (
-                        <div className="w-[50px] h-[50px] bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center text-white font-bold text-xl">
-                          {(job.nonprofit?.orgName || job.orgName || "O").charAt(0).toUpperCase()}
-                        </div>
-                      )}
+                      ) : null}
+                      <div 
+                        className="w-[50px] h-[50px] bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center text-white font-bold text-xl"
+                        style={{ display: (job.orgLogoUrl || job.organization?.logoUrl || job.nonprofit?.logoUrl) ? 'none' : 'flex' }}
+                      >
+                        {(job.orgName || job.organization?.orgName || job.nonprofit?.orgName || "O").charAt(0).toUpperCase()}
+                      </div>
                       <div>
                         <h4 className="font-semibold text-lg line-clamp-1">
                           {job.title}
                         </h4>
                         <p className="text-sm text-[#6F6F6F]">
                           <span className="font-[500] underline">
-                            {job.nonprofit?.orgName || job.orgName || "Organization"}
+                            {job.orgName || job.organization?.orgName || job.nonprofit?.orgName || "Organization"}
                           </span>{" "}
-                          {job.orgLocation && `in ${job.orgLocation.split(',')[0]}`} | {formatEmploymentType(job.employmentType)}
+                          {(job.orgLocation || job.locationCity) && `in ${job.orgLocation?.split(',')[0] || job.locationCity}`} | {formatEmploymentType(job.employmentType)}
                         </p>
                       </div>
                     </div>
@@ -121,12 +143,12 @@ const JobTrend = () => {
                   </div>
 
                   <div className="flex items-center justify-between my-5">
-                    {job.salaryRange ? (
+                    {job.salaryRange || (job.salaryMin && job.salaryMax) ? (
                       <p className="text-sm">
                         <span className="text-lg font-[500]">
-                          ${job.salaryRange.min}-${job.salaryRange.max}
+                          ${(job.salaryRange?.min || job.salaryMin || 0).toLocaleString()}-${(job.salaryRange?.max || job.salaryMax || 0).toLocaleString()}
                         </span>{" "}
-                        / {job.employmentType === "PART_TIME" ? "week" : "month"}
+                        / month
                       </p>
                     ) : (
                       <p className="text-sm text-gray-500">Compensation not specified</p>
