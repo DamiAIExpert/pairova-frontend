@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 const Header = () => {
   const { user } = useAuthStore();
   const [logoUrl, setLogoUrl] = useState("");
+  const [brandLogoError, setBrandLogoError] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -24,9 +25,30 @@ const Header = () => {
     <div>
       <div>
         <div className="flex items-center justify-between py-5 px-5 md:px-[100px] border-b border-black/30 sticky top-0 bg-white">
-          <div>
-            <img src="/Images/logo.AVIF" alt="pairova" className="w-[100px]" />
-          </div>
+          <Link to="/non-profit">
+            <div className="cursor-pointer">
+              {!brandLogoError ? (
+                <img 
+                  src="/Images/logo.svg" 
+                  alt="Pairova" 
+                  className="w-[120px] h-[40px]"
+                  onError={(e) => {
+                    console.error("Failed to load brand logo from /Images/logo.svg, trying AVIF...");
+                    const img = e.target as HTMLImageElement;
+                    if (img.src.includes('logo.svg')) {
+                      img.src = '/Images/logo.AVIF';
+                    } else {
+                      setBrandLogoError(true);
+                    }
+                  }}
+                />
+              ) : (
+                <div className="w-[120px] h-[40px] flex items-center justify-center text-2xl font-bold text-black border border-black/20 rounded px-3">
+                  PAIROVA
+                </div>
+              )}
+            </div>
+          </Link>
 
           {/* <div className="hidden md:flex items-center gap-5">
           <button>Candidate</button>
