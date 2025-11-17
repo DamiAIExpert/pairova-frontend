@@ -11,9 +11,19 @@ export interface Job {
   placement?: JobPlacement;
   employmentType?: EmploymentType;
   experienceMinYrs?: number;
+  experienceMaxYrs?: number;
+  experienceLevel?: string;
+  requiredSkills?: string[];
+  hardSoftSkills?: string[];
+  qualifications?: string;
+  responsibilities?: string;
+  missionStatement?: string;
+  benefits?: string[];
+  deadline?: string;
   locationCity?: string;
   locationState?: string;
   locationCountry?: string;
+  postalCode?: string;
   salaryMin?: number;
   salaryMax?: number;
   currency?: string;
@@ -24,16 +34,35 @@ export interface Job {
     userId?: string;
     orgName: string;
     logoUrl?: string;
+    sizeLabel?: string;
+    orgType?: string;
+    industry?: string;
+    sector?: string;
+    foundedOn?: string | Date;
+    country?: string;
+    state?: string;
+    city?: string;
+    mission?: string;
   };
   // Legacy support - map organization to nonprofit
   nonprofit?: {
     id: string;
     orgName: string;
     logoUrl?: string;
+    sizeLabel?: string;
+    orgType?: string;
+    industry?: string;
+    sector?: string;
+    foundedOn?: string | Date;
+    country?: string;
+    state?: string;
+    city?: string;
+    mission?: string;
   };
   applications?: Application[];
   createdAt: string;
   updatedAt: string;
+  publishedAt?: string;
 }
 
 export interface CreateJobRequest {
@@ -42,12 +71,23 @@ export interface CreateJobRequest {
   placement?: JobPlacement;
   employmentType?: EmploymentType;
   experienceMinYrs?: number;
+  experienceMaxYrs?: number;
+  experienceLevel?: string;
+  requiredSkills?: string[];
+  hardSoftSkills?: string[];
+  qualifications?: string;
+  responsibilities?: string;
+  missionStatement?: string;
+  benefits?: string[];
+  deadline?: string;
   locationCity?: string;
   locationState?: string;
   locationCountry?: string;
+  postalCode?: string;
   salaryMin?: number;
   salaryMax?: number;
   currency?: string;
+  status?: JobStatus;
 }
 
 export interface JobSearchParams extends PaginationParams {
@@ -136,8 +176,28 @@ export type ApplicationStatus = typeof ApplicationStatus[keyof typeof Applicatio
 export class JobsService {
   // Job management endpoints
   static async getJobs(params: JobSearchParams = {}): Promise<JobSearchResult> {
-    const response = await apiClient.get<JobSearchResult>('/jobs', params);
-    return response.data;
+    const response = await apiClient.get<Job[] | JobSearchResult>('/jobs', params);
+    
+    // Backend /jobs endpoint returns Job[] directly, not JobSearchResult
+    // Transform it to match the expected format
+    if (Array.isArray(response.data)) {
+      return {
+        jobs: response.data,
+        total: response.data.length,
+        page: params.page || 1,
+        limit: params.limit || 100,
+        filters: {
+          locations: [],
+          employmentTypes: [],
+          placements: [],
+          experienceRanges: [],
+          salaryRanges: [],
+        },
+      };
+    }
+    
+    // If it's already in JobSearchResult format, return as-is
+    return response.data as JobSearchResult;
   }
 
   static async getJob(jobId: string): Promise<Job> {
@@ -200,8 +260,8 @@ export class JobsService {
     return response.data;
   }
 
-  static async getRecommendedJobs(params: PaginationParams = {}): Promise<Job[]> {
-    const response = await apiClient.get<Job[]>('/jobs/recommended', params);
+  static async getRecommendedJobs(params: PaginationParams = {}): Promise<JobSearchResult> {
+    const response = await apiClient.get<JobSearchResult>('/jobs/search/recommended', params);
     return response.data;
   }
 
@@ -261,12 +321,13 @@ export class JobsService {
     page: number;
     limit: number;
   }> {
+    // Use the applicant-specific endpoint which includes job details
     const response = await apiClient.get<{
       applications: Application[];
       total: number;
       page: number;
       limit: number;
-    }>('/applications', params);
+    }>('/applicants/me/applications', params);
     return response.data;
   }
 

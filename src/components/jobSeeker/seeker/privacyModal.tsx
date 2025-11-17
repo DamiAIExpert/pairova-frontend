@@ -15,6 +15,13 @@ const PrivacyModal = ({
     allowDataAnalytics: true,
     allowThirdPartySharing: false,
     privacyUpdatedAt: null,
+    allowPersonalInformation: true,
+    allowGenderData: true,
+    allowLocation: true,
+    allowExperience: true,
+    allowSkills: true,
+    allowCertificates: true,
+    allowBio: true,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

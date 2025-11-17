@@ -148,6 +148,10 @@ export class AuthService {
     return response.data;
   }
 
+  static async deleteAccount(): Promise<void> {
+    await apiClient.delete('/auth/account');
+  }
+
   // Check if user is authenticated
   static isAuthenticated(): boolean {
     return !!apiClient['token'];

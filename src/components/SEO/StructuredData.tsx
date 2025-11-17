@@ -19,9 +19,9 @@ export const JobPostingStructuredData: React.FC<JobPostingStructuredDataProps> =
     employmentType: job.employmentType?.replace('_', ' '),
     hiringOrganization: {
       '@type': 'Organization',
-      name: job.nonprofit.orgName,
-      logo: job.nonprofit.logoUrl,
-      sameAs: `https://pairova.com/nonprofit/${job.nonprofitId}`,
+      name: job.nonprofit?.orgName || job.organization?.orgName || 'Organization',
+      logo: job.nonprofit?.logoUrl || job.organization?.logoUrl,
+      sameAs: job.nonprofit?.id || job.organization?.id ? `https://pairova.com/nonprofit/${job.nonprofit?.id || job.organization?.id}` : undefined,
     },
     jobLocation: job.placement === 'REMOTE' ? {
       '@type': 'Place',

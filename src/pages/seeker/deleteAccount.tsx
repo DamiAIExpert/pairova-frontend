@@ -2,10 +2,12 @@ import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "@/store/authStore";
+import { AuthService } from "@/services/auth.service";
+import { toast } from "sonner";
 
-const NonprofitDeleteAccount = () => {
+const DeleteAccountPage = () => {
   const navigate = useNavigate();
-  const { logout: _logout } = useAuthStore();
+  const { logout } = useAuthStore();
   const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
@@ -24,18 +26,28 @@ const NonprofitDeleteAccount = () => {
       setIsDeleting(true);
       setError("");
       
-      // TODO: Call API to delete account
-      // await NonprofitService.deleteAccount();
-      
-      console.log("⚠️ Account deletion requested (API not implemented yet)");
-      
-      // Logout and redirect
-      alert("Account deletion feature coming soon. For now, please contact support to delete your account.");
-      // logout();
-      // navigate("/");
+      // Call API to delete account
+      try {
+        await AuthService.deleteAccount();
+        toast.success("Account deleted successfully");
+        
+        // Logout and redirect
+        logout();
+        navigate("/");
+      } catch (apiError: any) {
+        // If endpoint doesn't exist, show message
+        if (apiError.response?.status === 404) {
+          toast.error("Account deletion feature is not yet available. Please contact support.");
+          console.log("⚠️ Account deletion endpoint not implemented yet");
+        } else {
+          throw apiError;
+        }
+      }
     } catch (err: any) {
       console.error("❌ Failed to delete account:", err);
-      setError(err.message || "Failed to delete account. Please try again.");
+      const errorMessage = err.response?.data?.message || err.message || "Failed to delete account. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsDeleting(false);
     }
@@ -59,11 +71,12 @@ const NonprofitDeleteAccount = () => {
                 Deleting your account will permanently remove all your data, including:
               </p>
               <ul className="list-disc list-inside space-y-1 text-red-800">
-                <li>Your organization profile and information</li>
-                <li>All job postings you've created</li>
-                <li>All applications and applicant data</li>
+                <li>Your profile and personal information</li>
+                <li>All education, experience, and certification records</li>
+                <li>All job applications you've submitted</li>
+                <li>All saved jobs and reminders</li>
                 <li>Messages and communication history</li>
-                <li>Settings and preferences</li>
+                <li>Settings and privacy preferences</li>
               </ul>
               <p className="mt-3 font-semibold text-red-900">
                 This action cannot be undone. Please make sure you have downloaded any data you need before proceeding.
@@ -92,7 +105,13 @@ const NonprofitDeleteAccount = () => {
               <Icon icon="material-symbols:visibility-off-outline" className="text-2xl text-gray-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-medium">Make your profile private</p>
-                <p className="text-sm text-gray-600">Hide your organization from public view</p>
+                <p className="text-sm text-gray-600">Hide your profile from public view</p>
+                <button
+                  onClick={() => navigate("/seeker/profile/privacy-settings")}
+                  className="text-blue-600 hover:underline text-sm mt-1"
+                >
+                  Go to Privacy Settings →
+                </button>
               </div>
             </div>
             
@@ -101,6 +120,12 @@ const NonprofitDeleteAccount = () => {
               <div>
                 <p className="font-medium">Contact support</p>
                 <p className="text-sm text-gray-600">We're here to help resolve any issues you're experiencing</p>
+                <button
+                  onClick={() => navigate("/seeker/profile/help-center")}
+                  className="text-blue-600 hover:underline text-sm mt-1"
+                >
+                  Go to Help Center →
+                </button>
               </div>
             </div>
           </div>
@@ -135,7 +160,7 @@ const NonprofitDeleteAccount = () => {
 
           <div className="flex gap-4">
             <button
-              onClick={() => navigate("/non-profit")}
+              onClick={() => navigate("/seeker/profile")}
               disabled={isDeleting}
               className="flex-1 px-6 py-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -166,7 +191,7 @@ const NonprofitDeleteAccount = () => {
           <p className="text-gray-600">
             Need help or have questions?{" "}
             <button 
-              onClick={() => navigate("/non-profit/help-center")}
+              onClick={() => navigate("/seeker/profile/help-center")}
               className="text-blue-600 hover:underline font-medium"
             >
               Contact Support
@@ -178,16 +203,5 @@ const NonprofitDeleteAccount = () => {
   );
 };
 
-export default NonprofitDeleteAccount;
-
-
-
-
-
-
-
-
-
-
-
+export default DeleteAccountPage;
 

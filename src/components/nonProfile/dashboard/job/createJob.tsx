@@ -22,7 +22,16 @@ const CreateJob = () => {
     description: "",
     employmentType: [] as EmploymentType[],
     placement: "" as JobPlacement | "",
-    experience: "",
+    experienceMinYrs: "",
+    experienceMaxYrs: "",
+    experienceLevel: "",
+    requiredSkills: [] as string[],
+    hardSoftSkills: [] as string[],
+    qualifications: "",
+    responsibilities: "",
+    missionStatement: "",
+    benefits: [] as string[],
+    deadline: "",
     salaryMin: "",
     salaryMax: "",
     currency: "USD",
@@ -32,6 +41,10 @@ const CreateJob = () => {
     locationState: "",
     postalCode: "",
   });
+  
+  const [skillInput, setSkillInput] = useState("");
+  const [hardSoftSkillInput, setHardSoftSkillInput] = useState("");
+  const [benefitInput, setBenefitInput] = useState("");
 
   const employmentTypes: { value: EmploymentType; label: string; icon: string }[] = [
     { value: "FULL_TIME", label: "Full Time", icon: "hugeicons:stop-watch" },
@@ -52,6 +65,57 @@ const CreateJob = () => {
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const addSkill = () => {
+    if (skillInput.trim() && !formData.requiredSkills.includes(skillInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        requiredSkills: [...prev.requiredSkills, skillInput.trim()],
+      }));
+      setSkillInput("");
+    }
+  };
+
+  const removeSkill = (skill: string) => {
+    setFormData(prev => ({
+      ...prev,
+      requiredSkills: prev.requiredSkills.filter(s => s !== skill),
+    }));
+  };
+
+  const addBenefit = () => {
+    if (benefitInput.trim() && !formData.benefits.includes(benefitInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        benefits: [...prev.benefits, benefitInput.trim()],
+      }));
+      setBenefitInput("");
+    }
+  };
+
+  const removeBenefit = (benefit: string) => {
+    setFormData(prev => ({
+      ...prev,
+      benefits: prev.benefits.filter(b => b !== benefit),
+    }));
+  };
+
+  const addHardSoftSkill = () => {
+    if (hardSoftSkillInput.trim() && !formData.hardSoftSkills.includes(hardSoftSkillInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        hardSoftSkills: [...prev.hardSoftSkills, hardSoftSkillInput.trim()],
+      }));
+      setHardSoftSkillInput("");
+    }
+  };
+
+  const removeHardSoftSkill = (skill: string) => {
+    setFormData(prev => ({
+      ...prev,
+      hardSoftSkills: prev.hardSoftSkills.filter(s => s !== skill),
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,7 +155,16 @@ const CreateJob = () => {
         description: formData.description,
         employmentType: formData.employmentType[0], // Use first selected type as primary
         placement: formData.placement as JobPlacement,
-        experienceRequired: formData.experience || undefined,
+        experienceMinYrs: formData.experienceMinYrs ? parseInt(formData.experienceMinYrs) : undefined,
+        experienceMaxYrs: formData.experienceMaxYrs ? parseInt(formData.experienceMaxYrs) : undefined,
+        experienceLevel: formData.experienceLevel || undefined,
+        requiredSkills: formData.requiredSkills && formData.requiredSkills.length > 0 ? formData.requiredSkills : undefined,
+        hardSoftSkills: formData.hardSoftSkills && formData.hardSoftSkills.length > 0 ? formData.hardSoftSkills : undefined,
+        qualifications: formData.qualifications || undefined,
+        responsibilities: formData.responsibilities || undefined,
+        missionStatement: formData.missionStatement || undefined,
+        benefits: formData.benefits && formData.benefits.length > 0 ? formData.benefits : undefined,
+        deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
         salaryMin: formData.salaryMin ? parseFloat(formData.salaryMin) : undefined,
         salaryMax: formData.salaryMax ? parseFloat(formData.salaryMax) : undefined,
         currency: formData.currency,
@@ -165,6 +238,48 @@ const CreateJob = () => {
                 required
               ></textarea>
             </div>
+
+            <div className="my-5">
+              <label htmlFor="qualifications" className="text-[#797979]">
+                Qualifications
+              </label>
+              <textarea
+                id="qualifications"
+                value={formData.qualifications}
+                onChange={(e) => handleInputChange("qualifications", e.target.value)}
+                className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
+                rows={6}
+                placeholder="List the qualifications required for this role (e.g., education, experience, certifications)..."
+              ></textarea>
+            </div>
+
+            <div className="my-5">
+              <label htmlFor="responsibilities" className="text-[#797979]">
+                Responsibilities
+              </label>
+              <textarea
+                id="responsibilities"
+                value={formData.responsibilities}
+                onChange={(e) => handleInputChange("responsibilities", e.target.value)}
+                className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
+                rows={6}
+                placeholder="List the key responsibilities and duties for this role..."
+              ></textarea>
+            </div>
+
+            <div className="my-5">
+              <label htmlFor="missionStatement" className="text-[#797979]">
+                Mission Statement
+              </label>
+              <textarea
+                id="missionStatement"
+                value={formData.missionStatement}
+                onChange={(e) => handleInputChange("missionStatement", e.target.value)}
+                className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
+                rows={4}
+                placeholder="Describe the mission and values that guide this role and organization..."
+              ></textarea>
+            </div>
           </div>
         </div>
 
@@ -227,14 +342,51 @@ const CreateJob = () => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="experience">Experience Required</label>
+              <label htmlFor="experienceMinYrs">Experience (Min Years)</label>
               <input
-                id="experience"
-                type="text"
-                value={formData.experience}
-                onChange={(e) => handleInputChange("experience", e.target.value)}
+                id="experienceMinYrs"
+                type="number"
+                min="0"
+                value={formData.experienceMinYrs}
+                onChange={(e) => handleInputChange("experienceMinYrs", e.target.value)}
                 className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
-                placeholder="e.g., 4-6 years"
+                placeholder="e.g., 2"
+              />
+            </div>
+
+            <div className="w-full">
+              <label htmlFor="experienceMaxYrs">Experience (Max Years)</label>
+              <input
+                id="experienceMaxYrs"
+                type="number"
+                min="0"
+                value={formData.experienceMaxYrs}
+                onChange={(e) => handleInputChange("experienceMaxYrs", e.target.value)}
+                className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="e.g., 5"
+              />
+            </div>
+
+            <div className="w-full">
+              <label htmlFor="experienceLevel">Experience Level</label>
+              <input
+                id="experienceLevel"
+                type="text"
+                value={formData.experienceLevel}
+                onChange={(e) => handleInputChange("experienceLevel", e.target.value)}
+                className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="e.g., 1-3 years, Entry Level, Senior"
+              />
+            </div>
+
+            <div className="w-full">
+              <label htmlFor="deadline">Application Deadline</label>
+              <input
+                id="deadline"
+                type="datetime-local"
+                value={formData.deadline}
+                onChange={(e) => handleInputChange("deadline", e.target.value)}
+                className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
               />
             </div>
 
@@ -286,6 +438,147 @@ const CreateJob = () => {
                 placeholder="e.g., 10-20 people"
               />
             </div>
+          </div>
+
+          {/* Required Skills */}
+          <div className="my-5">
+            <label htmlFor="requiredSkills">Required Skills</label>
+            <div className="flex gap-2 my-3">
+              <input
+                id="requiredSkills"
+                type="text"
+                value={skillInput}
+                onChange={(e) => setSkillInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addSkill();
+                  }
+                }}
+                className="flex-1 py-3 px-4 border border-black/30 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="Enter a skill and press Enter or click Add"
+              />
+              <button
+                type="button"
+                onClick={addSkill}
+                className="px-6 py-3 bg-black text-white rounded-md hover:bg-black/90 transition-colors"
+              >
+                Add
+              </button>
+            </div>
+            {formData.requiredSkills.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.requiredSkills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-sm"
+                  >
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => removeSkill(skill)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Icon icon="mdi:close" className="text-lg" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Hard and Soft Skills */}
+          <div className="my-5">
+            <label htmlFor="hardSoftSkills">Hard and Soft Skills</label>
+            <div className="flex gap-2 my-3">
+              <input
+                id="hardSoftSkills"
+                type="text"
+                value={hardSoftSkillInput}
+                onChange={(e) => setHardSoftSkillInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addHardSoftSkill();
+                  }
+                }}
+                className="flex-1 py-3 px-4 border border-black/30 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="Enter a hard or soft skill and press Enter or click Add"
+              />
+              <button
+                type="button"
+                onClick={addHardSoftSkill}
+                className="px-6 py-3 bg-black text-white rounded-md hover:bg-black/90 transition-colors"
+              >
+                Add
+              </button>
+            </div>
+            {formData.hardSoftSkills && formData.hardSoftSkills.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.hardSoftSkills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-sm"
+                  >
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => removeHardSoftSkill(skill)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Icon icon="mdi:close" className="text-lg" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Benefits */}
+          <div className="my-5">
+            <label htmlFor="benefits">Benefits</label>
+            <div className="flex gap-2 my-3">
+              <input
+                id="benefits"
+                type="text"
+                value={benefitInput}
+                onChange={(e) => setBenefitInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addBenefit();
+                  }
+                }}
+                className="flex-1 py-3 px-4 border border-black/30 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="Enter a benefit and press Enter or click Add"
+              />
+              <button
+                type="button"
+                onClick={addBenefit}
+                className="px-6 py-3 bg-black text-white rounded-md hover:bg-black/90 transition-colors"
+              >
+                Add
+              </button>
+            </div>
+            {formData.benefits.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.benefits.map((benefit, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-sm"
+                  >
+                    {benefit}
+                    <button
+                      type="button"
+                      onClick={() => removeBenefit(benefit)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Icon icon="mdi:close" className="text-lg" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Location */}

@@ -72,12 +72,6 @@ const Header = () => {
             </div>
           </Link>
 
-          {/* <div className="hidden md:flex items-center gap-5">
-          <button>Candidate</button>
-          <button>Job</button>
-          <button>Non profit</button>
-        </div> */}
-
           <div className="flex items-center gap-4">
             {/* Notification Bell */}
             <button className="relative hover:bg-gray-100 p-2 rounded-full transition-colors">

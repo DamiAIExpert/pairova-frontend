@@ -12,6 +12,14 @@ export interface PrivacySettings {
   allowDataAnalytics: boolean;
   allowThirdPartySharing: boolean;
   privacyUpdatedAt: string | null;
+  // Granular category settings
+  allowPersonalInformation: boolean;
+  allowGenderData: boolean;
+  allowLocation: boolean;
+  allowExperience: boolean;
+  allowSkills: boolean;
+  allowCertificates: boolean;
+  allowBio: boolean;
 }
 
 /**
@@ -23,6 +31,14 @@ export interface UpdatePrivacySettings {
   allowProfileIndexing?: boolean;
   allowDataAnalytics?: boolean;
   allowThirdPartySharing?: boolean;
+  // Granular category settings
+  allowPersonalInformation?: boolean;
+  allowGenderData?: boolean;
+  allowLocation?: boolean;
+  allowExperience?: boolean;
+  allowSkills?: boolean;
+  allowCertificates?: boolean;
+  allowBio?: boolean;
 }
 
 /**

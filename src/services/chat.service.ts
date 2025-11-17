@@ -1,7 +1,8 @@
 // Chat service for WebSocket messaging
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3007';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.pairova.com';
+const SOCKET_URL = `${API_URL}/chat`; // Connect to /chat namespace
 
 export interface Message {
   id: string;
@@ -78,7 +79,7 @@ export interface TypingIndicator {
 
 class ChatService {
   private socket: Socket | null = null;
-  private token: string | null = null;
+  private _token: string | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
 
@@ -86,15 +87,23 @@ class ChatService {
    * Connect to chat WebSocket server
    */
   connect(token: string): Socket {
-    this.token = token;
+    this._token = token;
+    
+    // Remove Bearer prefix if present (guard expects raw token in auth.token)
+    const rawToken = token.startsWith('Bearer ') ? token.replace('Bearer ', '') : token;
+    const bearerToken = `Bearer ${rawToken}`;
     
     this.socket = io(SOCKET_URL, {
-      auth: { token },
+      auth: { token: rawToken }, // Pass raw token in auth object
+      extraHeaders: {
+        Authorization: bearerToken, // Also pass in header as fallback
+      },
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       reconnectionAttempts: this.maxReconnectAttempts,
+      forceNew: true, // Force new connection
     });
 
     this.setupEventListeners();
@@ -118,6 +127,14 @@ class ChatService {
 
     this.socket.on('connect_error', (error) => {
       console.error('🔴 Connection error:', error);
+      console.error('🔴 Error details:', {
+        message: error.message,
+        description: (error as any).description,
+        context: (error as any).context,
+        type: (error as any).type,
+        data: (error as any).data,
+      });
+      console.error('🔴 Socket URL:', SOCKET_URL);
       this.reconnectAttempts++;
       
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
@@ -137,7 +154,7 @@ class ChatService {
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
-      this.token = null;
+      this._token = null;
       console.log('Disconnected from chat server');
     }
   }
@@ -147,7 +164,7 @@ class ChatService {
    */
   joinConversation(conversationId: string) {
     if (this.socket) {
-      this.socket.emit('join_conversation', { conversationId });
+      this.socket.emit('joinConversation', { conversationId });
       console.log(`📥 Joined conversation: ${conversationId}`);
     }
   }
@@ -157,7 +174,7 @@ class ChatService {
    */
   leaveConversation(conversationId: string) {
     if (this.socket) {
-      this.socket.emit('leave_conversation', { conversationId });
+      this.socket.emit('leaveConversation', { conversationId });
       console.log(`📤 Left conversation: ${conversationId}`);
     }
   }
@@ -167,7 +184,7 @@ class ChatService {
    */
   sendMessage(data: SendMessageDto) {
     if (this.socket) {
-      this.socket.emit('send_message', data);
+      this.socket.emit('sendMessage', data);
       console.log('📤 Sent message:', data);
     }
   }
@@ -177,7 +194,7 @@ class ChatService {
    */
   markAsRead(conversationId: string, messageIds: string[]) {
     if (this.socket) {
-      this.socket.emit('mark_as_read', { conversationId, messageIds });
+      this.socket.emit('markAsRead', { conversationId, messageIds });
     }
   }
 
@@ -195,7 +212,7 @@ class ChatService {
    */
   onMessage(callback: (message: Message) => void) {
     if (this.socket) {
-      this.socket.on('new_message', callback);
+      this.socket.on('newMessage', callback);
     }
   }
 
@@ -204,7 +221,7 @@ class ChatService {
    */
   onMessageUpdate(callback: (data: { messageId: string; status: Message['status'] }) => void) {
     if (this.socket) {
-      this.socket.on('message_status_update', callback);
+      this.socket.on('messageStatusUpdate', callback);
     }
   }
 
@@ -213,7 +230,7 @@ class ChatService {
    */
   onTyping(callback: (data: TypingIndicator) => void) {
     if (this.socket) {
-      this.socket.on('user_typing', callback);
+      this.socket.on('userTyping', callback);
     }
   }
 
@@ -222,7 +239,7 @@ class ChatService {
    */
   onOnlineUsers(callback: (userIds: string[]) => void) {
     if (this.socket) {
-      this.socket.on('online_users', callback);
+      this.socket.on('onlineUsers', callback);
     }
   }
 
@@ -231,7 +248,7 @@ class ChatService {
    */
   onUserOnline(callback: (userId: string) => void) {
     if (this.socket) {
-      this.socket.on('user_online', callback);
+      this.socket.on('userOnline', callback);
     }
   }
 
@@ -240,7 +257,7 @@ class ChatService {
    */
   onUserOffline(callback: (userId: string) => void) {
     if (this.socket) {
-      this.socket.on('user_offline', callback);
+      this.socket.on('userOffline', callback);
     }
   }
 
@@ -269,4 +286,14 @@ class ChatService {
 }
 
 export const chatService = new ChatService();
+
+
+
+
+
+
+
+
+
+
 

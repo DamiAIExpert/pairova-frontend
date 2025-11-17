@@ -46,8 +46,8 @@ const Experience = () => {
     const loadProfile = async () => {
       try {
         const profile = await ProfileService.getProfile();
-        if (profile?.experience) {
-          setFormData(profile.experience);
+        if ((profile as any)?.experience) {
+          setFormData((profile as any).experience);
         }
       } catch (err) {
         console.error("Failed to load experience:", err);

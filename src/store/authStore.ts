@@ -4,6 +4,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AuthService, type UserProfile, Role } from '../services/auth.service';
+import { authUtils } from '../services/api';
 
 interface AuthState {
   user: UserProfile | null;
@@ -13,12 +14,13 @@ interface AuthState {
 }
 
 interface AuthActions {
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<any>;
   register: (email: string, password: string, role: Role) => Promise<void>;
   logout: () => Promise<void>;
   getCurrentUser: () => Promise<void>;
   clearError: () => void;
   setUser: (user: UserProfile | null) => void;
+  setToken: (token: string) => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -119,6 +121,10 @@ export const useAuthStore = create<AuthStore>()(
           user,
           isAuthenticated: !!user,
         });
+      },
+
+      setToken: (token: string) => {
+        authUtils.setToken(token);
       },
     }),
     {

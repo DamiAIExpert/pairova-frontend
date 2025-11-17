@@ -16,10 +16,11 @@ export interface ApiError {
   message: string;
   status: number;
   details?: any;
+  response?: Response;
 }
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3007';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.pairova.com';
 const API_VERSION = ''; // Backend doesn't use /api/v1 prefix
 
 class ApiClient {
@@ -55,9 +56,17 @@ class ApiClient {
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${API_VERSION}${endpoint}`;
     
-    // Create abort controller for timeout (30 seconds for registration, 15 seconds for others)
+    // Create abort controller for timeout
+    // - 60 seconds for file uploads (Cloudinary can be slow)
+    // - 45 seconds for job creation (can be slow with many fields and database operations)
+    // - 30 seconds for registration, saved-jobs, and nonprofit job queries (database operations can be slow)
+    // - 15 seconds for others
+    const isUpload = endpoint.includes('/upload');
     const isRegistration = endpoint.includes('/register');
-    const timeoutMs = isRegistration ? 30000 : 15000;
+    const isSavedJobs = endpoint.includes('/saved-jobs');
+    const isNonprofitJobs = endpoint.includes('/ngos/me/jobs');
+    const isJobCreation = endpoint.includes('/ngos/me/jobs') && options.method === 'POST';
+    const timeoutMs = isUpload ? 60000 : (isJobCreation ? 45000 : (isRegistration || isSavedJobs || isNonprofitJobs ? 30000 : 15000));
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     
@@ -88,11 +97,45 @@ class ApiClient {
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw {
+        const error: ApiError = {
           message: errorData.message || 'An error occurred',
           status: response.status,
           details: errorData,
-        } as ApiError;
+          response: response, // Add response for easier access
+        };
+        
+        // Automatically handle 401 errors (token expired/invalid)
+        if (response.status === 401) {
+          authUtils.clearToken();
+          // Clear auth store if available
+          if (typeof window !== 'undefined') {
+            // Dispatch a custom event that auth store can listen to
+            window.dispatchEvent(new CustomEvent('auth:token-expired'));
+            // Redirect to login with current path as redirect
+            const currentPath = window.location.pathname + window.location.search;
+            window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+          }
+        }
+        
+        throw error;
+      }
+
+      // Handle 204 No Content (DELETE endpoints) - no body to parse
+      if (response.status === 204) {
+        return {
+          data: null as any,
+          status: response.status,
+        };
+      }
+
+      // Check if response has content to parse
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        // If no JSON content, return empty data
+        return {
+          data: null as any,
+          status: response.status,
+        };
       }
 
       const responseData = await response.json();
@@ -141,14 +184,21 @@ class ApiClient {
     });
   }
 
-  async post<T>(endpoint: string, data?: any, options?: RequestInit): Promise<ApiResponse<T>> {
+  async post<T>(
+    endpoint: string, 
+    data?: any, 
+    options?: RequestInit & { onUploadProgress?: (progressEvent: { loaded: number; total?: number }) => void }
+  ): Promise<ApiResponse<T>> {
     // Don't stringify FormData - it breaks file uploads!
     const isFormData = data instanceof FormData;
+    
+    // Extract onUploadProgress if present (not part of RequestInit)
+    const { onUploadProgress, ...requestOptions } = options || {};
     
     return this.request<T>(endpoint, {
       method: 'POST',
       body: isFormData ? data : (data ? JSON.stringify(data) : undefined),
-      ...options,
+      ...requestOptions,
     });
   }
 

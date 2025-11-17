@@ -14,7 +14,7 @@ const NonprofitSkills = () => {
   const [newSoftSkill, setNewSoftSkill] = useState("");
   const [newHardSkill, setNewHardSkill] = useState("");
   const [certificateUrl, setCertificateUrl] = useState("");
-  const [certificateFile, setCertificateFile] = useState<File | null>(null);
+  const [_certificateFile, setCertificateFile] = useState<File | null>(null);
   const [uploadingCertificate, setUploadingCertificate] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -122,7 +122,7 @@ const NonprofitSkills = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3007'}/uploads/simple`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://api.pairova.com'}/uploads/simple`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,

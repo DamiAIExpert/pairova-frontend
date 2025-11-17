@@ -2,6 +2,7 @@ import { Icon } from "@iconify/react";
 import { Link } from "react-router";
 import { useState } from "react";
 import { AuthService, Role } from "@/services/auth.service";
+import { useAuthStore } from "@/store/authStore";
 
 type UserRole = "jobSeeker" | "nonProfit" | null;
 
@@ -11,6 +12,7 @@ interface SignupProps {
 }
 
 const Signup = ({ setStep, onSignupSuccess }: SignupProps) => {
+  const setUser = useAuthStore((state) => state.setUser);
   const [selectedRole, setSelectedRole] = useState<UserRole>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -76,7 +78,12 @@ const Signup = ({ setStep, onSignupSuccess }: SignupProps) => {
       }
       
       // Register user - this will trigger OTP email and create profile
-      await AuthService.register(registrationData);
+      const response = await AuthService.register(registrationData);
+      
+      // Persist user in auth store so onboarding forms can read email/name
+      if (response?.user) {
+        setUser(response.user);
+      }
 
       // Store email and role for OTP verification
       if (onSignupSuccess) {
@@ -194,7 +201,7 @@ const Signup = ({ setStep, onSignupSuccess }: SignupProps) => {
               <div className="my-3">
                 <button 
                   onClick={() => {
-                    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3007';
+                    const apiUrl = import.meta.env.VITE_API_URL || 'https://api.pairova.com';
                     window.location.href = `${apiUrl}/auth/google`;
                   }}
                   className="border border-[#818181] w-full py-3 flex items-center gap-3 justify-center rounded-md my-3 hover:bg-gray-50 transition-colors"
@@ -206,7 +213,7 @@ const Signup = ({ setStep, onSignupSuccess }: SignupProps) => {
 
                 <button 
                   onClick={() => {
-                    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3007';
+                    const apiUrl = import.meta.env.VITE_API_URL || 'https://api.pairova.com';
                     window.location.href = `${apiUrl}/auth/linkedin`;
                   }}
                   className="border border-[#818181] w-full py-3 flex items-center gap-3 justify-center rounded-md my-3 hover:bg-gray-50 transition-colors"

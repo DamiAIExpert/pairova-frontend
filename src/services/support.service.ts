@@ -1,13 +1,15 @@
 import { apiClient } from './api';
 
-export enum FeedbackCategory {
-  BUG_REPORT = 'BUG_REPORT',
-  FEATURE_REQUEST = 'FEATURE_REQUEST',
-  USER_EXPERIENCE = 'USER_EXPERIENCE',
-  PERFORMANCE = 'PERFORMANCE',
-  SECURITY = 'SECURITY',
-  GENERAL = 'GENERAL',
-}
+export const FeedbackCategory = {
+  BUG_REPORT: 'BUG_REPORT',
+  FEATURE_REQUEST: 'FEATURE_REQUEST',
+  USER_EXPERIENCE: 'USER_EXPERIENCE',
+  PERFORMANCE: 'PERFORMANCE',
+  SECURITY: 'SECURITY',
+  GENERAL: 'GENERAL',
+} as const;
+
+export type FeedbackCategory = typeof FeedbackCategory[keyof typeof FeedbackCategory];
 
 export interface CreateContactRequest {
   fullName: string;
@@ -61,9 +63,20 @@ class SupportService {
     };
 
     const response = await apiClient.post<ContactResponse>('/feedback', payload);
-    return response;
+    return response.data;
   }
 }
 
 export const supportService = new SupportService();
+
+
+
+
+
+
+
+
+
+
+
 

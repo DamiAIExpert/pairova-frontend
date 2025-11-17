@@ -100,7 +100,7 @@ class ApplicationsService {
     const response = await apiClient.get<ApplicationsResponse>(
       `/ngos/me/applications${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     );
-    return response;
+    return response.data;
   }
 
   /**
@@ -110,7 +110,7 @@ class ApplicationsService {
     const response = await apiClient.get<Application>(
       `/ngos/me/applications/${applicationId}`
     );
-    return response;
+    return response.data;
   }
 
   /**
@@ -129,7 +129,7 @@ class ApplicationsService {
       `/ngos/me/applications/${applicationId}/status`,
       data
     );
-    return response;
+    return response.data || { message: response.message || 'Status updated successfully' };
   }
 
   /**
@@ -139,7 +139,7 @@ class ApplicationsService {
     const response = await apiClient.get<ApplicationStatistics>(
       '/ngos/me/applications/statistics'
     );
-    return response;
+    return response.data;
   }
 
   /**
@@ -149,7 +149,7 @@ class ApplicationsService {
     const response = await apiClient.get<ApplicationPipeline>(
       '/ngos/me/applications/pipeline'
     );
-    return response;
+    return response.data;
   }
 
   /**
@@ -164,7 +164,7 @@ class ApplicationsService {
       '/ngos/me/applications/bulk-status',
       { applicationIds, status, notes }
     );
-    return response;
+    return response.data || { message: response.message || 'Statuses updated successfully', updatedCount: 0 };
   }
 }
 

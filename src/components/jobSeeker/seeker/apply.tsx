@@ -6,6 +6,7 @@ import { ProfileService } from "@/services/profile.service";
 import { useIsAuthenticated, useUser } from "@/store/authStore";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { handleApiError } from "@/services/api";
 
 const Apply = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const Apply = () => {
   const user = useUser();
 
   const [job, setJob] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -109,15 +110,24 @@ const Apply = () => {
           });
         }
 
-        // Load user profile
-        const profileData = await ProfileService.getProfile();
-        setProfile(profileData);
+        // Load user profile (gracefully handle if profile doesn't exist yet)
+        let profileData = null;
+        try {
+          profileData = await ProfileService.getProfile();
+          setProfile(profileData);
+        } catch (profileError: any) {
+          // If 401/403, user might not have applicant profile yet - that's okay
+          if (profileError?.response?.status !== 401 && profileError?.response?.status !== 403) {
+            console.error("Failed to load profile:", profileError);
+          }
+          // Continue with form pre-fill using user data only
+        }
 
         // Construct full name from firstName and lastName
         const fullName = profileData?.firstName && profileData?.lastName
           ? `${profileData.firstName} ${profileData.lastName}`
-          : profileData?.firstName || profileData?.lastName || user?.firstName && user?.lastName
-          ? `${user.firstName} ${user.lastName}`
+          : profileData?.firstName || profileData?.lastName || (user?.firstName && user?.lastName)
+          ? `${user?.firstName || ''} ${user?.lastName || ''}`.trim()
           : "";
 
         // Pre-fill form with user data
@@ -125,7 +135,7 @@ const Apply = () => {
           ...prev,
           fullName: fullName,
           email: user?.email || "",
-          phone: profileData?.phone || user?.phone || "",
+          phone: (profileData as any)?.phone || (user as any)?.phone || "",
           portfolioUrl: profileData?.portfolioUrl || "",
         }));
       } catch (err) {
@@ -139,7 +149,7 @@ const Apply = () => {
     loadData();
   }, [id, isAuthenticated, navigate, user]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextareaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -348,7 +358,17 @@ const Apply = () => {
       navigate("/seeker/finder");
     } catch (err: any) {
       console.error("Failed to submit application:", err);
-      const errorMessage = err.response?.data?.message || err.message || "Failed to submit application. Please try again.";
+      
+      // Handle 401 errors (token expired) - redirect to login instead of showing alert
+      if (err.status === 401) {
+        // API client already handles redirect, but we can add a user-friendly message
+        // Don't show alert for 401 - redirect is already happening
+        setSubmitting(false);
+        return;
+      }
+      
+      // For other errors, use handleApiError utility and show message
+      const errorMessage = handleApiError(err);
       alert(errorMessage);
     } finally {
       setSubmitting(false);
@@ -1129,16 +1149,6 @@ const Apply = () => {
                               onChange={(e) => updateCertification(cert.id, "credentialId", e.target.value)}
                               className="w-full px-4 py-2.5 border border-black/30 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                               placeholder="Credential ID"
-                            />
-                          </div>
-                          <div className="md:col-span-2">
-                            <label className="block text-sm font-medium mb-2">Credential URL</label>
-                            <input
-                              type="url"
-                              value={cert.credentialUrl}
-                              onChange={(e) => updateCertification(cert.id, "credentialUrl", e.target.value)}
-                              className="w-full px-4 py-2.5 border border-black/30 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                              placeholder="https://..."
                             />
                           </div>
                         </div>

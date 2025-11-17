@@ -1,7 +1,7 @@
 // useChat hook for managing chat state and WebSocket connection
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { chatService, type Message, type Conversation, type SendMessageDto } from '@/services/chat.service';
-import { apiClient } from '@/services/api';
+import { apiClient, authUtils } from '@/services/api';
 import { useAuthStore } from '@/store/authStore';
 
 interface UseChatReturn {
@@ -25,7 +25,7 @@ interface UseChatReturn {
 }
 
 export function useChat(): UseChatReturn {
-  const { user, token } = useAuthStore();
+  const { user } = useAuthStore();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
@@ -153,7 +153,13 @@ export function useChat(): UseChatReturn {
    * Initialize WebSocket connection
    */
   useEffect(() => {
-    if (!token || !user || isInitialized.current) return;
+    if (!user || isInitialized.current) return;
+
+    const token = authUtils.getToken();
+    if (!token) {
+      console.warn('⚠️ No auth token found, cannot connect to chat');
+      return;
+    }
 
     console.log('🔌 Initializing chat WebSocket connection...');
     const socket = chatService.connect(token);
@@ -250,7 +256,7 @@ export function useChat(): UseChatReturn {
       chatService.disconnect();
       isInitialized.current = false;
     };
-  }, [token, user, fetchConversations]);
+  }, [user, fetchConversations]);
 
   return {
     conversations,
@@ -270,4 +276,14 @@ export function useChat(): UseChatReturn {
     createConversation,
   };
 }
+
+
+
+
+
+
+
+
+
+
 

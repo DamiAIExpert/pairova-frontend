@@ -2,9 +2,7 @@ import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { useOnboardingStore } from "@/store/onboardingStore";
-import { useAuthStore } from "@/store/authStore";
 import { ProfileService } from "@/services/profile.service";
-import { AuthService } from "@/services/auth.service";
 
 interface SkillData {
   hardSoftSkills: string;
@@ -13,8 +11,7 @@ interface SkillData {
 
 const Skill = () => {
   const navigate = useNavigate();
-  const { setStepCompleted, resetProgress } = useOnboardingStore();
-  const { user, setUser } = useAuthStore();
+  const { setStepCompleted } = useOnboardingStore();
   
   const [formData, setFormData] = useState<SkillData>({
     hardSoftSkills: "",
@@ -28,8 +25,15 @@ const Skill = () => {
     const loadProfile = async () => {
       try {
         const profile = await ProfileService.getProfile();
-        if (profile?.skills) {
-          setFormData(profile.skills);
+        if (profile?.skills && Array.isArray(profile.skills)) {
+          // Convert array of skills back to comma-separated strings
+          // We'll combine all skills into technical skills for simplicity
+          // In a real app, you might want to separate them based on some logic
+          const allSkills = profile.skills.join(', ');
+          setFormData({
+            hardSoftSkills: "",
+            technicalSkills: allSkills,
+          });
         }
       } catch (err) {
         console.error("Failed to load skills:", err);
@@ -55,35 +59,40 @@ const Skill = () => {
       setLoading(true);
       setError("");
 
-      // Save skills to backend
+      // Convert comma-separated strings to array of strings
+      // Backend expects skills: string[] (array of individual skills)
+      const skillsArray: string[] = [];
+      
+      // Parse hard/soft skills
+      if (formData.hardSoftSkills) {
+        const hardSoft = formData.hardSoftSkills
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
+        skillsArray.push(...hardSoft);
+      }
+      
+      // Parse technical skills
+      if (formData.technicalSkills) {
+        const technical = formData.technicalSkills
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
+        skillsArray.push(...technical);
+      }
+
+      // Save skills to backend as array
       await ProfileService.updateProfileStep({
-        skills: formData,
-      } as any);
+        skills: skillsArray,
+      });
 
       // Mark this step as completed
       setStepCompleted('skill');
 
-      // ✅ MARK ONBOARDING AS COMPLETE
-      await AuthService.completeOnboarding();
-      
-      // Update user in auth store
-      if (user) {
-        setUser({ ...user, hasCompletedOnboarding: true });
-      }
-
-      // Reset onboarding progress for next time
-      resetProgress();
-
-      // Navigate to appropriate dashboard
-      if (user?.role === 'applicant') {
-        navigate("/seeker");
-      } else if (user?.role === 'nonprofit') {
-        navigate("/non-profit");
-      } else {
-        navigate("/seeker");
-      }
+      // Navigate to next step (certificates)
+      navigate('/seeker/create-account/certificates');
     } catch (err: any) {
-      console.error("Failed to complete onboarding:", err);
+      console.error("Failed to save skills:", err);
       setError(err.response?.data?.message || "Failed to complete setup. Please try again.");
     } finally {
       setLoading(false);
@@ -143,69 +152,6 @@ const Skill = () => {
             </div>
           </div>
 
-          {/* Certificate */}
-          <div>
-            <div className="py-5 px-5 border-b border-black/30">
-              <h4 className="font-semibold">Certificate</h4>
-            </div>
-
-            <div className="my-10 mx-10">
-              <div className="w-full border border-black/30 rounded-md text-center cursor-pointer py-[50px] hover:bg-gray-50 transition-colors">
-                <label htmlFor="certificate" className="cursor-pointer">
-                  <input 
-                    type="file" 
-                    className="hidden w-full" 
-                    id="certificate" 
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    disabled={loading}
-                  />
-                  <div className="w-full py-6">
-                    <Icon
-                      icon="material-symbols:upload-rounded"
-                      className="text-4xl text-center w-[100px] mx-auto cursor-pointer"
-                    />
-                    <span className="text-sm text-gray-600">
-                      Drag and Drop or <span className="text-black font-medium">Choose File</span> for upload
-                    </span>
-                    <p className="text-xs text-gray-500 mt-2">PDF, JPG, PNG (Max 5MB)</p>
-                  </div>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Other Attachments */}
-          <div>
-            <div className="py-5 px-5 border-b border-black/30">
-              <h4 className="font-semibold">Other Attachments</h4>
-            </div>
-
-            <div className="my-10 mx-10">
-              <div className="w-full border border-black/30 rounded-md text-center cursor-pointer py-[50px] hover:bg-gray-50 transition-colors">
-                <label htmlFor="attachments" className="cursor-pointer">
-                  <input 
-                    type="file" 
-                    className="hidden w-full" 
-                    id="attachments" 
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                    multiple
-                    disabled={loading}
-                  />
-                  <div className="w-full py-6">
-                    <Icon
-                      icon="material-symbols:upload-rounded"
-                      className="text-4xl text-center w-[100px] mx-auto cursor-pointer"
-                    />
-                    <span className="text-sm text-gray-600">
-                      Drag and Drop or <span className="text-black font-medium">Choose Files</span> for upload
-                    </span>
-                    <p className="text-xs text-gray-500 mt-2">Resume, Portfolio, etc. (Max 10MB each)</p>
-                  </div>
-                </label>
-              </div>
-            </div>
-          </div>
-
           <div className="border-t border-black/30 py-4 px-5 absolute bottom-0 right-0 w-full flex items-center justify-between bg-white">
             <div>
               <button 
@@ -233,7 +179,7 @@ const Skill = () => {
                     Completing Setup...
                   </>
                 ) : (
-                  '✓ Complete Setup'
+                  'Save and Continue'
                 )}
               </button>
             </div>

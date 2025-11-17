@@ -15,6 +15,7 @@ interface OnboardingState {
   setCurrentStep: (stepId: string) => void;
   getProgress: () => number;
   resetProgress: () => void;
+  hydrateSteps: (completedMap: Record<string, boolean>) => void;
 }
 
 const initialSteps: OnboardingStep[] = [
@@ -24,7 +25,9 @@ const initialSteps: OnboardingStep[] = [
   { id: 'bio', name: 'Bio', path: 'bio', completed: false },
   { id: 'education', name: 'Education', path: 'education', completed: false },
   { id: 'experience', name: 'Experience', path: 'experience', completed: false },
-  { id: 'skill', name: 'Skill', path: 'skill', completed: false },
+  { id: 'skill', name: 'Skills', path: 'skill', completed: false },
+  { id: 'certificates', name: 'Certificates', path: 'certificates', completed: false },
+  { id: 'other-attachments', name: 'Other Attachments', path: 'other-attachments', completed: false },
 ];
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -53,6 +56,15 @@ export const useOnboardingStore = create<OnboardingState>()(
 
       resetProgress: () => {
         set({ steps: initialSteps, currentStep: 'account-info' });
+      },
+
+      hydrateSteps: (completedMap: Record<string, boolean>) => {
+        set((state) => ({
+          steps: state.steps.map((step) => ({
+            ...step,
+            completed: completedMap[step.id] ?? step.completed,
+          })),
+        }));
       },
     }),
     {

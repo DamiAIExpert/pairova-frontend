@@ -98,8 +98,8 @@ export const useJobsStore = create<JobsStore>((set) => ({
 
   fetchRecommendedJobs: async () => {
     try {
-      const jobs = await JobsService.getRecommendedJobs();
-      set({ recommendedJobs: jobs });
+      const result = await JobsService.getRecommendedJobs();
+      set({ recommendedJobs: result.jobs || [] });
     } catch (error: any) {
       set({ error: error.message || 'Failed to fetch recommended jobs' });
     }

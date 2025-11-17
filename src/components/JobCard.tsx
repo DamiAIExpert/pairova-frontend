@@ -37,7 +37,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
     }
 
     try {
-      await applyForJob(job.id, `I am interested in the ${job.title} position at ${job.nonprofit.orgName}.`);
+      const orgName = job.nonprofit?.orgName || job.organization?.orgName || 'this organization';
+      await applyForJob(job.id, `I am interested in the ${job.title} position at ${orgName}.`);
     } catch (error) {
       console.error('Failed to apply for job:', error);
     }
@@ -48,12 +49,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="text-xl font-semibold text-gray-900">{job.title}</h3>
-          <p className="text-gray-600">{job.nonprofit.orgName}</p>
+          <p className="text-gray-600">{job.nonprofit?.orgName || job.organization?.orgName || 'Organization'}</p>
         </div>
-        {job.nonprofit.logoUrl && (
+        {(job.nonprofit?.logoUrl || job.organization?.logoUrl) && (
           <img 
-            src={job.nonprofit.logoUrl} 
-            alt={`${job.nonprofit.orgName} logo`}
+            src={job.nonprofit?.logoUrl || job.organization?.logoUrl || ''} 
+            alt={`${job.nonprofit?.orgName || job.organization?.orgName || 'Organization'} logo`}
             className="w-12 h-12 rounded object-cover"
           />
         )}

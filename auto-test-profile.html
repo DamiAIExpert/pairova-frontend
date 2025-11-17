@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Data Test - Auto Run</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #4ec9b0;
+            border-bottom: 2px solid #4ec9b0;
+            padding-bottom: 10px;
+        }
+        .log {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .success { color: #4ec9b0; }
+        .error { color: #f48771; }
+        .warning { color: #dcdcaa; }
+        .info { color: #569cd6; }
+        .section {
+            margin: 15px 0;
+            padding: 10px;
+            border-left: 3px solid #569cd6;
+            background: #2d2d30;
+        }
+        .entry {
+            margin: 8px 0;
+            padding: 8px;
+            background: #1e1e1e;
+            border-radius: 3px;
+        }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #1177bb; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .stat-box {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4ec9b0;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #858585;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Profile Data Test - Auto Running...</h1>
+        <div id="output" class="log">Initializing...</div>
+        <div id="stats" class="stats"></div>
+        <div id="details"></div>
+        <button onclick="runTest()">🔄 Run Again</button>
+        <button onclick="clearLog()">🗑️ Clear</button>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3007';
+        let logOutput = '';
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+            const className = type;
+            logOutput += `[${timestamp}] ${prefix} ${message}\n`;
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('output').textContent = logOutput;
+            document.getElementById('output').scrollTop = document.getElementById('output').scrollHeight;
+        }
+
+        function clearLog() {
+            logOutput = '';
+            document.getElementById('output').textContent = '';
+            document.getElementById('stats').innerHTML = '';
+            document.getElementById('details').innerHTML = '';
+        }
+
+        async function runTest() {
+            clearLog();
+            log('Starting profile data test...', 'info');
+            
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                log('No auth token found. Please login first or open this page from your app.', 'error');
+                return;
+            }
+
+            log('Auth token found', 'success');
+            log('Fetching profile data from: ' + API_BASE_URL, 'info');
+
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+
+            try {
+                const startTime = Date.now();
+                
+                log('Making API requests...', 'info');
+                const [profileRes, educationRes, experienceRes, certificationRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/profiles/applicant/me`, { headers }),
+                    fetch(`${API_BASE_URL}/profiles/education`, { headers }),
+                    fetch(`${API_BASE_URL}/profiles/experience`, { headers }),
+                    fetch(`${API_BASE_URL}/profiles/certifications`, { headers })
+                ]);
+
+                const fetchTime = Date.now() - startTime;
+                log(`API requests completed in ${fetchTime}ms`, 'success');
+
+                // Check for errors
+                if (!profileRes.ok) {
+                    throw new Error(`Profile request failed: ${profileRes.status} ${profileRes.statusText}`);
+                }
+                if (!educationRes.ok) {
+                    throw new Error(`Education request failed: ${educationRes.status} ${educationRes.statusText}`);
+                }
+                if (!experienceRes.ok) {
+                    throw new Error(`Experience request failed: ${experienceRes.status} ${experienceRes.statusText}`);
+                }
+                if (!certificationRes.ok) {
+                    throw new Error(`Certification request failed: ${certificationRes.status} ${certificationRes.statusText}`);
+                }
+
+                log('Parsing responses...', 'info');
+                const profileData = await profileRes.json();
+                const educationData = await educationRes.json();
+                const experienceData = await experienceRes.json();
+                const certificationData = await certificationRes.json();
+
+                const profile = profileData.data || profileData;
+                const educations = Array.isArray(educationData.data) ? educationData.data : (Array.isArray(educationData) ? educationData : []);
+                const experiences = Array.isArray(experienceData.data) ? experienceData.data : (Array.isArray(experienceData) ? experienceData : []);
+                const certifications = Array.isArray(certificationData.data) ? certificationData.data : (Array.isArray(certificationData) ? certificationData : []);
+
+                log('═══════════════════════════════════════════════════════════', 'info');
+                log('PROFILE DATA SUMMARY', 'info');
+                log('═══════════════════════════════════════════════════════════', 'info');
+                log('', 'info');
+
+                // Display stats
+                const statsHtml = `
+                    <div class="stat-box">
+                        <div class="stat-value">${educations.length}</div>
+                        <div class="stat-label">Education Entries<br>(Expected: 8)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${experiences.length}</div>
+                        <div class="stat-label">Experience Entries<br>(Expected: 7)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${certifications.length}</div>
+                        <div class="stat-label">Certification Entries<br>(Expected: 1)</div>
+                    </div>
+                `;
+                document.getElementById('stats').innerHTML = statsHtml;
+
+                // Account Information
+                log('📌 ACCOUNT INFORMATION:', 'info');
+                log(`   Work Position: ${profile.workPosition || 'Not set'}`, 'info');
+                log(`   Country: ${profile.country || 'Not set'}`, 'info');
+                log('', 'info');
+
+                // Personal Information
+                log('👤 PERSONAL INFORMATION:', 'info');
+                log(`   Name: ${profile.firstName || ''} ${profile.lastName || ''}`, 'info');
+                log(`   Email: ${profile.email || 'Not set'}`, 'info');
+                log(`   Phone: ${profile.phone || 'Not set'}`, 'info');
+                log(`   DOB: ${profile.dob || 'Not set'}`, 'info');
+                log(`   Gender: ${profile.gender || 'Not set'}`, 'info');
+                log('', 'info');
+
+                // Address
+                log('📍 ADDRESS:', 'info');
+                log(`   City: ${profile.city || 'Not set'}`, 'info');
+                log(`   State: ${profile.state || 'Not set'}`, 'info');
+                log(`   Postal Code: ${profile.postalCode || 'Not set'}`, 'info');
+                log('', 'info');
+
+                // Bio
+                const wordCount = (profile.bio || '').trim().split(/\s+/).filter(w => w.length > 0).length;
+                log('📝 BIO:', 'info');
+                log(`   ${profile.bio || 'Not set'}`, 'info');
+                log(`   Word Count: ${wordCount}`, 'info');
+                log('', 'info');
+
+                // Skills
+                if (profile.skills && Array.isArray(profile.skills) && profile.skills.length > 0) {
+                    log(`💼 SKILLS (${profile.skills.length}):`, 'info');
+                    profile.skills.forEach((skill, i) => {
+                        log(`   ${i + 1}. ${skill}`, 'info');
+                    });
+                    log('', 'info');
+                }
+
+                // Education
+                log(`🎓 EDUCATION ENTRIES (${educations.length}):`, 'info');
+                if (educations.length > 0) {
+                    educations.forEach((edu, i) => {
+                        log(`   ${i + 1}. ${edu.school || 'N/A'} - ${edu.degree || 'N/A'}`, 'info');
+                        log(`      ID: ${edu.id}`, 'info');
+                        log(`      Course: ${edu.fieldOfStudy || edu.field_of_study || 'N/A'}`, 'info');
+                        log(`      Grade: ${edu.grade || 'N/A'}`, 'info');
+                        log(`      Role: ${edu.role || 'N/A'}`, 'info');
+                    });
+                } else {
+                    log('   No education entries found', 'warning');
+                }
+                log('', 'info');
+
+                // Experience
+                log(`💼 EXPERIENCE ENTRIES (${experiences.length}):`, 'info');
+                if (experiences.length > 0) {
+                    experiences.forEach((exp, i) => {
+                        log(`   ${i + 1}. ${exp.company || 'N/A'} - ${exp.roleTitle || 'N/A'}`, 'info');
+                        log(`      ID: ${exp.id}`, 'info');
+                        log(`      Type: ${exp.employmentType || 'N/A'}`, 'info');
+                        log(`      Dates: ${exp.startDate || 'N/A'} to ${exp.endDate || 'Currently Working'}`, 'info');
+                        log(`      Location: ${exp.locationState || 'N/A'}, ${exp.postal_code || 'N/A'}`, 'info');
+                    });
+                } else {
+                    log('   No experience entries found', 'warning');
+                }
+                log('', 'info');
+
+                // Certifications
+                log(`🏆 CERTIFICATION ENTRIES (${certifications.length}):`, 'info');
+                if (certifications.length > 0) {
+                    certifications.forEach((cert, i) => {
+                        log(`   ${i + 1}. ${cert.name || 'N/A'} - ${cert.issuer || 'N/A'}`, 'info');
+                        log(`      ID: ${cert.id}`, 'info');
+                        log(`      Issue Date: ${cert.issueDate || cert.issuedDate || 'N/A'}`, 'info');
+                        log(`      Credential ID: ${cert.credentialId || 'N/A'}`, 'info');
+                    });
+                } else {
+                    log('   No certification entries found', 'warning');
+                }
+                log('', 'info');
+
+                // Duplicate Detection
+                log('═══════════════════════════════════════════════════════════', 'info');
+                log('🔍 DUPLICATE DETECTION', 'info');
+                log('═══════════════════════════════════════════════════════════', 'info');
+                log('', 'info');
+
+                const eduSchools = educations.map(e => e.school).filter(Boolean);
+                const uniqueEdu = [...new Set(eduSchools)];
+                if (eduSchools.length !== uniqueEdu.length) {
+                    log(`⚠️  DUPLICATE EDUCATION ENTRIES DETECTED!`, 'warning');
+                    log(`   Found ${eduSchools.length} entries, but only ${uniqueEdu.length} unique schools`, 'warning');
+                    const duplicates = eduSchools.filter((school, index) => eduSchools.indexOf(school) !== index);
+                    log(`   Duplicate schools: ${[...new Set(duplicates)].join(', ')}`, 'warning');
+                } else {
+                    log('✅ No duplicate education entries', 'success');
+                }
+
+                const expCompanies = experiences.map(e => e.company).filter(Boolean);
+                const uniqueExp = [...new Set(expCompanies)];
+                if (expCompanies.length !== uniqueExp.length) {
+                    log(`⚠️  DUPLICATE EXPERIENCE ENTRIES DETECTED!`, 'warning');
+                    log(`   Found ${expCompanies.length} entries, but only ${uniqueExp.length} unique companies`, 'warning');
+                    const duplicates = expCompanies.filter((company, index) => expCompanies.indexOf(company) !== index);
+                    log(`   Duplicate companies: ${[...new Set(duplicates)].join(', ')}`, 'warning');
+                } else {
+                    log('✅ No duplicate experience entries', 'success');
+                }
+
+                // Validation
+                log('', 'info');
+                log('═══════════════════════════════════════════════════════════', 'info');
+                log('📊 VALIDATION RESULTS', 'info');
+                log('═══════════════════════════════════════════════════════════', 'info');
+                log('', 'info');
+
+                const eduMatch = educations.length === 8;
+                const expMatch = experiences.length === 7;
+                const certMatch = certifications.length === 1;
+
+                log(`Education: ${educations.length}/8 ${eduMatch ? '✅' : '❌'}`, eduMatch ? 'success' : 'error');
+                log(`Experience: ${experiences.length}/7 ${expMatch ? '✅' : '❌'}`, expMatch ? 'success' : 'error');
+                log(`Certification: ${certifications.length}/1 ${certMatch ? '✅' : '❌'}`, certMatch ? 'success' : 'error');
+
+                // Display detailed data
+                const detailsHtml = `
+                    <div class="section">
+                        <h3>📦 Full JSON Data</h3>
+                        <details>
+                            <summary>Click to expand</summary>
+                            <pre style="background: #1e1e1e; padding: 15px; border-radius: 4px; overflow-x: auto; color: #d4d4d4;">${JSON.stringify({ profile, educations, experiences, certifications }, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+                document.getElementById('details').innerHTML = detailsHtml;
+
+                log('', 'info');
+                log('✅ Test completed successfully!', 'success');
+                log(`Total time: ${Date.now() - startTime}ms`, 'info');
+
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+                if (error.stack) {
+                    log(`Stack: ${error.stack}`, 'error');
+                }
+            }
+        }
+
+        // Auto-run on page load
+        window.addEventListener('load', () => {
+            setTimeout(runTest, 500);
+        });
+    </script>
+</body>
+</html>
+
+

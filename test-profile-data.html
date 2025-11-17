@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Data Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .entry {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        .entry h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .field {
+            margin: 8px 0;
+        }
+        .field-label {
+            font-weight: bold;
+            color: #6c757d;
+            display: inline-block;
+            min-width: 150px;
+        }
+        .field-value {
+            color: #212529;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        #output {
+            margin-top: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Profile Data Test Tool</h1>
+        <p>This tool fetches and displays all profile data from the backend API.</p>
+        
+        <div>
+            <button id="fetchBtn" onclick="fetchProfileData()">Fetch Profile Data</button>
+            <button onclick="clearOutput()">Clear Output</button>
+        </div>
+
+        <div id="output"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3007';
+
+        function getToken() {
+            // Try to get token from localStorage (if running in same origin)
+            try {
+                return localStorage.getItem('auth_token');
+            } catch (e) {
+                // If cross-origin, prompt user
+                return prompt('Please enter your auth token:');
+            }
+        }
+
+        async function fetchProfileData() {
+            const output = document.getElementById('output');
+            const fetchBtn = document.getElementById('fetchBtn');
+            
+            fetchBtn.disabled = true;
+            output.innerHTML = '<div class="loading">🔄 Fetching profile data...</div>';
+
+            const token = getToken();
+            if (!token) {
+                output.innerHTML = '<div class="error">❌ No auth token found. Please login first or enter your token.</div>';
+                fetchBtn.disabled = false;
+                return;
+            }
+
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+
+            try {
+                // Fetch all data in parallel
+                const [profileRes, educationRes, experienceRes, certificationRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/profiles/applicant/me`, { headers }),
+                    fetch(`${API_BASE_URL}/profiles/education`, { headers }),
+                    fetch(`${API_BASE_URL}/profiles/experience`, { headers }),
+                    fetch(`${API_BASE_URL}/profiles/certifications`, { headers })
+                ]);
+
+                // Check for errors
+                if (!profileRes.ok) {
+                    throw new Error(`Profile request failed: ${profileRes.status} ${profileRes.statusText}`);
+                }
+                if (!educationRes.ok) {
+                    throw new Error(`Education request failed: ${educationRes.status} ${educationRes.statusText}`);
+                }
+                if (!experienceRes.ok) {
+                    throw new Error(`Experience request failed: ${experienceRes.status} ${experienceRes.statusText}`);
+                }
+                if (!certificationRes.ok) {
+                    throw new Error(`Certification request failed: ${certificationRes.status} ${certificationRes.statusText}`);
+                }
+
+                // Parse responses
+                const profileData = await profileRes.json();
+                const educationData = await educationRes.json();
+                const experienceData = await experienceRes.json();
+                const certificationData = await certificationRes.json();
+
+                // Extract actual data (backend wraps in { data: ... })
+                const profile = profileData.data || profileData;
+                const educations = Array.isArray(educationData.data) ? educationData.data : (Array.isArray(educationData) ? educationData : []);
+                const experiences = Array.isArray(experienceData.data) ? experienceData.data : (Array.isArray(experienceData) ? experienceData : []);
+                const certifications = Array.isArray(certificationData.data) ? certificationData.data : (Array.isArray(certificationData) ? certificationData : []);
+
+                // Display results
+                displayResults(profile, educations, experiences, certifications);
+
+            } catch (error) {
+                output.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                console.error('Error:', error);
+            } finally {
+                fetchBtn.disabled = false;
+            }
+        }
+
+        function displayResults(profile, educations, experiences, certifications) {
+            const output = document.getElementById('output');
+            let html = '';
+
+            // Summary
+            html += '<div class="section">';
+            html += '<h2>📊 Summary</h2>';
+            html += `<div class="field"><span class="field-label">Education Entries:</span> <span class="field-value">${educations.length}</span></div>`;
+            html += `<div class="field"><span class="field-label">Experience Entries:</span> <span class="field-value">${experiences.length}</span></div>`;
+            html += `<div class="field"><span class="field-label">Certification Entries:</span> <span class="field-value">${certifications.length}</span></div>`;
+            
+            // Check for duplicates
+            const educationSchools = educations.map(e => e.school).filter(Boolean);
+            const uniqueEducationSchools = [...new Set(educationSchools)];
+            if (educationSchools.length !== uniqueEducationSchools.length) {
+                html += `<div class="warning">⚠️ Duplicate education entries detected! Found ${educationSchools.length} entries, but only ${uniqueEducationSchools.length} unique schools.</div>`;
+            }
+
+            const experienceCompanies = experiences.map(e => e.company).filter(Boolean);
+            const uniqueExperienceCompanies = [...new Set(experienceCompanies)];
+            if (experienceCompanies.length !== uniqueExperienceCompanies.length) {
+                html += `<div class="warning">⚠️ Duplicate experience entries detected! Found ${experienceCompanies.length} entries, but only ${uniqueExperienceCompanies.length} unique companies.</div>`;
+            }
+
+            html += '</div>';
+
+            // Account Information
+            html += '<div class="section">';
+            html += '<h2>📌 Account Information</h2>';
+            html += `<div class="field"><span class="field-label">Work Position:</span> <span class="field-value">${profile.workPosition || 'Not set'}</span></div>`;
+            html += `<div class="field"><span class="field-label">Country:</span> <span class="field-value">${profile.country || 'Not set'}</span></div>`;
+            html += '</div>';
+
+            // Personal Information
+            html += '<div class="section">';
+            html += '<h2>👤 Personal Information</h2>';
+            html += `<div class="field"><span class="field-label">First Name:</span> <span class="field-value">${profile.firstName || 'Not set'}</span></div>`;
+            html += `<div class="field"><span class="field-label">Last Name:</span> <span class="field-value">${profile.lastName || 'Not set'}</span></div>`;
+            html += `<div class="field"><span class="field-label">Email:</span> <span class="field-value">${profile.email || 'Not set'}</span></div>`;
+            html += `<div class="field"><span class="field-label">Phone:</span> <span class="field-value">${profile.phone || 'Not set'}</span></div>`;
+            html += `<div class="field"><span class="field-label">Date of Birth:</span> <span class="field-value">${profile.dob || 'Not set'}</span></div>`;
+            html += `<div class="field"><span class="field-label">Gender:</span> <span class="field-value">${profile.gender || 'Not set'}</span></div>`;
+            html += '</div>';
+
+            // Address
+            html += '<div class="section">';
+            html += '<h2>📍 Address</h2>';
+            html += `<div class="field"><span class="field-label">City:</span> <span class="field-value">${profile.city || 'Not set'}</span></div>`;
+            html += `<div class="field"><span class="field-label">State:</span> <span class="field-value">${profile.state || 'Not set'}</span></div>`;
+            html += `<div class="field"><span class="field-label">Postal Code:</span> <span class="field-value">${profile.postalCode || 'Not set'}</span></div>`;
+            html += '</div>';
+
+            // Bio
+            html += '<div class="section">';
+            html += '<h2>📝 Bio</h2>';
+            html += `<div class="field-value">${profile.bio || 'Not set'}</div>`;
+            html += `<div class="field"><span class="field-label">Word Count:</span> <span class="field-value">${(profile.bio || '').trim().split(/\s+/).filter(w => w.length > 0).length}</span></div>`;
+            html += '</div>';
+
+            // Skills
+            html += '<div class="section">';
+            html += '<h2>💼 Skills</h2>';
+            if (profile.skills && Array.isArray(profile.skills) && profile.skills.length > 0) {
+                html += `<div class="field"><span class="field-label">Total Skills:</span> <span class="field-value">${profile.skills.length}</span></div>`;
+                profile.skills.forEach((skill, index) => {
+                    html += `<div class="field-value">${index + 1}. ${skill}</div>`;
+                });
+            } else {
+                html += '<div class="field-value">No skills found</div>';
+            }
+            html += '</div>';
+
+            // Education
+            html += '<div class="section">';
+            html += '<h2>🎓 Education Entries (' + educations.length + ')</h2>';
+            if (educations.length > 0) {
+                educations.forEach((edu, index) => {
+                    html += '<div class="entry">';
+                    html += `<h3>Education Entry ${index + 1}</h3>`;
+                    html += `<div class="field"><span class="field-label">ID:</span> <span class="field-value">${edu.id}</span></div>`;
+                    html += `<div class="field"><span class="field-label">School:</span> <span class="field-value">${edu.school || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Degree:</span> <span class="field-value">${edu.degree || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Course:</span> <span class="field-value">${edu.fieldOfStudy || edu.field_of_study || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Grade:</span> <span class="field-value">${edu.grade || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Role:</span> <span class="field-value">${edu.role || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Description:</span> <span class="field-value">${edu.description || 'Not set'}</span></div>`;
+                    html += '</div>';
+                });
+            } else {
+                html += '<div class="field-value">No education entries found</div>';
+            }
+            html += '</div>';
+
+            // Experience
+            html += '<div class="section">';
+            html += '<h2>💼 Experience Entries (' + experiences.length + ')</h2>';
+            if (experiences.length > 0) {
+                experiences.forEach((exp, index) => {
+                    html += '<div class="entry">';
+                    html += `<h3>Experience Entry ${index + 1}</h3>`;
+                    html += `<div class="field"><span class="field-label">ID:</span> <span class="field-value">${exp.id}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Employment Type:</span> <span class="field-value">${exp.employmentType || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Company:</span> <span class="field-value">${exp.company || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Job Role:</span> <span class="field-value">${exp.roleTitle || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Start Date:</span> <span class="field-value">${exp.startDate || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">End Date:</span> <span class="field-value">${exp.endDate || 'Currently Working'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Location State:</span> <span class="field-value">${exp.locationState || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Postal Code:</span> <span class="field-value">${exp.postal_code || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Description:</span> <span class="field-value">${exp.description || 'Not set'}</span></div>`;
+                    html += '</div>';
+                });
+            } else {
+                html += '<div class="field-value">No experience entries found</div>';
+            }
+            html += '</div>';
+
+            // Certifications
+            html += '<div class="section">';
+            html += '<h2>🏆 Certification Entries (' + certifications.length + ')</h2>';
+            if (certifications.length > 0) {
+                certifications.forEach((cert, index) => {
+                    html += '<div class="entry">';
+                    html += `<h3>Certificate ${index + 1}</h3>`;
+                    html += `<div class="field"><span class="field-label">ID:</span> <span class="field-value">${cert.id}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Name:</span> <span class="field-value">${cert.name || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Issuer:</span> <span class="field-value">${cert.issuer || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Issue Date:</span> <span class="field-value">${cert.issueDate || cert.issuedDate || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Credential ID:</span> <span class="field-value">${cert.credentialId || 'Not set'}</span></div>`;
+                    html += `<div class="field"><span class="field-label">Credential URL:</span> <span class="field-value">${cert.credentialUrl || 'Not set'}</span></div>`;
+                    html += '</div>';
+                });
+            } else {
+                html += '<div class="field-value">No certification entries found</div>';
+            }
+            html += '</div>';
+
+            // Raw JSON
+            html += '<div class="section">';
+            html += '<h2>📦 Raw JSON Data</h2>';
+            html += '<details><summary>Click to expand</summary>';
+            html += '<pre>' + JSON.stringify({ profile, educations, experiences, certifications }, null, 2) + '</pre>';
+            html += '</details>';
+            html += '</div>';
+
+            output.innerHTML = html;
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
+
+

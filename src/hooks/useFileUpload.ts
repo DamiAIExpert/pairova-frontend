@@ -24,7 +24,7 @@ export const useFileUpload = (options: UseFileUploadOptions = {}) => {
   const {
     maxSize = 2 * 1024 * 1024, // 2MB default
     allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml'],
-    kind = 'general',
+    kind: _kind = 'general',
     onSuccess,
     onError,
   } = options;
@@ -91,7 +91,13 @@ export const useFileUpload = (options: UseFileUploadOptions = {}) => {
         }
       );
       
-      console.log('✅ Upload response:', response.data);
+      console.log('✅ Upload response:', response);
+      console.log('✅ Upload response data:', response.data);
+
+      // Check if response has the expected structure
+      if (!response.data || !response.data.url) {
+        throw new Error('Invalid response format: missing url');
+      }
 
       const uploadedFileUrl = response.data.url;
       setUploadedUrl(uploadedFileUrl);
@@ -103,8 +109,11 @@ export const useFileUpload = (options: UseFileUploadOptions = {}) => {
       return uploadedFileUrl;
     } catch (err: any) {
       console.error('Failed to upload file:', err);
+      // Handle API client error format (fetch-based, not axios)
       const errorMessage =
-        err.response?.data?.message || 'Failed to upload file. Please try again.';
+        err.message || 
+        err.details?.message || 
+        (typeof err === 'string' ? err : 'Failed to upload file. Please try again.');
       setError(errorMessage);
       onError?.(errorMessage);
       return null;

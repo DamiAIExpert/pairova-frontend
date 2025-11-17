@@ -14,12 +14,22 @@ import { useOnboardingStore } from "@/store/onboardingStore";
 import { useAuthStore } from "@/store/authStore";
 import { ProfileService } from "@/services/profile.service";
 import { countries } from "@/utils/countries";
-import { getStatesByCountry, getCitiesByState } from "@/utils/locations";
+import { LocationService } from "@/services/location.service";
+
+const getCountryNameFromCode = (code: string) => {
+  const country = countries.find((c) => c.code === code);
+  return country?.name || code;
+};
+
+const getCountryCodeFromName = (name: string) => {
+  if (!name) return "";
+  const country = countries.find((c) => c.name.toLowerCase() === name.toLowerCase());
+  return country?.code || name;
+};
 
 const Address = () => {
   const navigate = useNavigate();
   const { setStepCompleted } = useOnboardingStore();
-  const user = useAuthStore((state) => state.user);
   
   const [formData, setFormData] = useState({
     country: "",
@@ -30,6 +40,11 @@ const Address = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [stateOptions, setStateOptions] = useState<string[]>([]);
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [isStateLoading, setIsStateLoading] = useState(false);
+  const [isCityLoading, setIsCityLoading] = useState(false);
+  const [locationError, setLocationError] = useState({ states: "", cities: "" });
 
   // Load existing profile data
   useEffect(() => {
@@ -37,11 +52,17 @@ const Address = () => {
       try {
         const profile = await ProfileService.getProfile();
         if (profile) {
+          const countryCode = profile.country
+            ? getCountryCodeFromName(profile.country)
+            : "";
+
           setFormData((prev) => ({
             ...prev,
-            country: profile.country || "",
+            country: countryCode,
             state: profile.state || "",
             city: profile.city || "",
+            postalCode: profile.postalCode || "",
+            taxId: (profile as any).taxId || "",
           }));
         }
       } catch (err) {
@@ -52,13 +73,68 @@ const Address = () => {
     loadProfile();
   }, []);
 
-  // Get states based on selected country
-  const availableStates = formData.country ? getStatesByCountry(formData.country) : [];
+  // Fetch states whenever country changes
+  useEffect(() => {
+    if (!formData.country) {
+      setStateOptions([]);
+      setCityOptions([]);
+      return;
+    }
 
-  // Get cities based on selected country and state
-  const availableCities = formData.country && formData.state 
-    ? getCitiesByState(formData.country, formData.state) 
-    : [];
+    const countryName = getCountryNameFromCode(formData.country);
+    const controller = new AbortController();
+    setIsStateLoading(true);
+    setLocationError((prev) => ({ ...prev, states: "" }));
+
+    LocationService.getStates(countryName, controller.signal)
+      .then((states) => {
+        setStateOptions(states);
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("Failed to fetch states:", err);
+          setLocationError((prev) => ({
+            ...prev,
+            states: "Unable to load states for this country.",
+          }));
+          setStateOptions([]);
+        }
+      })
+      .finally(() => setIsStateLoading(false));
+
+    return () => controller.abort();
+  }, [formData.country]);
+
+  // Fetch cities whenever state changes
+  useEffect(() => {
+    if (!formData.country || !formData.state) {
+      setCityOptions([]);
+      return;
+    }
+
+    const countryName = getCountryNameFromCode(formData.country);
+    const controller = new AbortController();
+    setIsCityLoading(true);
+    setLocationError((prev) => ({ ...prev, cities: "" }));
+
+    LocationService.getCities(countryName, formData.state, controller.signal)
+      .then((cities) => {
+        setCityOptions(cities);
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("Failed to fetch cities:", err);
+          setLocationError((prev) => ({
+            ...prev,
+            cities: "Unable to load cities for this state.",
+          }));
+          setCityOptions([]);
+        }
+      })
+      .finally(() => setIsCityLoading(false));
+
+    return () => controller.abort();
+  }, [formData.country, formData.state]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => {
@@ -93,10 +169,12 @@ const Address = () => {
 
       // Save to backend
       await ProfileService.updateProfileStep({
-        country: formData.country,
+        country: getCountryNameFromCode(formData.country),
         state: formData.state,
         city: formData.city,
-      });
+        postalCode: formData.postalCode || undefined,
+        taxId: formData.taxId || undefined,
+      } as any);
 
       // Mark step as completed
       setStepCompleted('address');
@@ -153,12 +231,17 @@ const Address = () => {
                   </SelectGroup>
                 </SelectContent>
               </Select>
+              {formData.country && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Selected country: {getCountryNameFromCode(formData.country)}
+                </p>
+              )}
             </div>
 
             {/* State */}
             <div className="w-full">
               <label htmlFor="state" className="text-sm font-medium">
-                State <span className="text-red-500">*</span>
+                State / Province <span className="text-red-500">*</span>
               </label>
               <Select 
                 value={formData.state} 
@@ -171,18 +254,23 @@ const Address = () => {
                 <SelectContent className="max-h-[300px] overflow-y-auto">
                   <SelectGroup>
                     <SelectLabel>States</SelectLabel>
-                    {availableStates.length > 0 ? (
-                      availableStates.map((state) => (
-                        <SelectItem key={state.code} value={state.code}>
-                          {state.name}
+                    {stateOptions.length > 0 ? (
+                      stateOptions.map((state) => (
+                        <SelectItem key={state} value={state}>
+                          {state}
                         </SelectItem>
                       ))
                     ) : (
-                      <div className="px-2 py-1 text-sm text-gray-500">No states available</div>
+                      <div className="px-2 py-1 text-sm text-gray-500">
+                        {isStateLoading ? "Loading states..." : "No states available"}
+                      </div>
                     )}
                   </SelectGroup>
                 </SelectContent>
               </Select>
+              {locationError.states && (
+                <p className="text-xs text-red-500 mt-1">{locationError.states}</p>
+              )}
             </div>
 
             {/* City */}
@@ -201,18 +289,23 @@ const Address = () => {
                 <SelectContent className="max-h-[300px] overflow-y-auto">
                   <SelectGroup>
                     <SelectLabel>Cities</SelectLabel>
-                    {availableCities.length > 0 ? (
-                      availableCities.map((city) => (
+                    {cityOptions.length > 0 ? (
+                      cityOptions.map((city) => (
                         <SelectItem key={city} value={city}>
                           {city}
                         </SelectItem>
                       ))
                     ) : (
-                      <div className="px-2 py-1 text-sm text-gray-500">No cities available</div>
+                      <div className="px-2 py-1 text-sm text-gray-500">
+                        {isCityLoading ? "Loading cities..." : "No cities available"}
+                      </div>
                     )}
                   </SelectGroup>
                 </SelectContent>
               </Select>
+              {locationError.cities && (
+                <p className="text-xs text-red-500 mt-1">{locationError.cities}</p>
+              )}
             </div>
 
             {/* Postal Code */}

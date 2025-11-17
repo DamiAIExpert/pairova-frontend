@@ -6,7 +6,7 @@ import { useAuthStore } from "@/store/authStore";
 import { countries } from "@/utils/countries";
 
 const NonprofitSettings = () => {
-  const { uploadFile, isUploading } = useFileUpload();
+  const { uploadFile, uploading: isUploading } = useFileUpload();
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -14,7 +14,7 @@ const NonprofitSettings = () => {
   const [successMessage, setSuccessMessage] = useState("");
 
   // Edit mode for each section
-  const [editingSection, setEditingSection] = useState<string | null>(null);
+  const [_editingSection, _setEditingSection] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     logoUrl: "",
@@ -109,8 +109,10 @@ const NonprofitSettings = () => {
     if (!file) return;
 
     try {
-      const result = await uploadFile(file, "logo");
-      setFormData(prev => ({ ...prev, logoUrl: result.url }));
+      const result = await uploadFile(file);
+      if (result) {
+        setFormData(prev => ({ ...prev, logoUrl: result }));
+      }
       setSuccessMessage("Logo uploaded successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
@@ -124,12 +126,14 @@ const NonprofitSettings = () => {
     if (!file) return;
 
     try {
-      const result = await uploadFile(file, "document");
-      setFormData(prev => ({ 
-        ...prev, 
-        policyFileUrl: result.url,
-        policyFileName: file.name 
-      }));
+      const result = await uploadFile(file);
+      if (result) {
+        setFormData(prev => ({ 
+          ...prev, 
+          policyFileUrl: result,
+          policyFileName: file.name 
+        }));
+      }
       setSuccessMessage("File uploaded successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {

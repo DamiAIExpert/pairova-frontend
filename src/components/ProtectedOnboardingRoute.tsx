@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router";
-import { AuthService } from "@/services/auth.service";
+import { Navigate, useLocation } from "react-router";
+import { useAuthStore } from "@/store/authStore";
 
 interface ProtectedOnboardingRouteProps {
   children: React.ReactNode;
@@ -12,37 +12,74 @@ const ProtectedOnboardingRoute = ({
   redirectToDashboard 
 }: ProtectedOnboardingRouteProps) => {
   const [loading, setLoading] = useState(true);
-  const [shouldRedirect, setShouldRedirect] = useState(false);
+  const [redirectTo, setRedirectTo] = useState<string | null>(null);
+  const [hasCheckedToken, setHasCheckedToken] = useState(false);
+  const location = useLocation();
+  const { user, isAuthenticated, getCurrentUser } = useAuthStore();
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       try {
-        // Check if user is authenticated
-        if (!AuthService.isAuthenticated()) {
-          // Not authenticated - redirect to login
-          setShouldRedirect(true);
-          setLoading(false);
-          return;
+        // First check if we have user in store (from persisted state or just logged in)
+        if (!isAuthenticated || !user) {
+          // Only check token once to avoid infinite loops
+          if (!hasCheckedToken) {
+            setHasCheckedToken(true);
+            // Check if we have a token in localStorage (might be set but store not updated yet)
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+              try {
+                // Token exists but user not in store - fetch user
+                await getCurrentUser();
+                // getCurrentUser updates the store, which will trigger a re-render
+                // The effect will run again with the updated user
+                return;
+              } catch (error) {
+                // Token invalid or expired - clear it and redirect to login
+                localStorage.removeItem('auth_token');
+                setRedirectTo('/login');
+                setLoading(false);
+                return;
+              }
+            } else {
+              // No token and no user - redirect to login
+              setRedirectTo('/login');
+              setLoading(false);
+              return;
+            }
+          } else {
+            // Already checked token but still no user - redirect to login
+            setRedirectTo('/login');
+            setLoading(false);
+            return;
+          }
         }
 
-        // Get current user profile
-        const user = await AuthService.getCurrentUser();
-
-        // If user has already completed onboarding, redirect to dashboard
-        if (user.hasCompletedOnboarding) {
-          setShouldRedirect(true);
+        // User is authenticated - check onboarding status
+        // Allow access to privacy-settings even if onboarding is complete
+        const isPrivacySettingsPage = location.pathname.includes('/privacy-settings');
+        
+        if (user.hasCompletedOnboarding && !isPrivacySettingsPage) {
+          // Onboarding already complete - redirect to dashboard (unless on privacy settings page)
+          setRedirectTo(redirectToDashboard);
         }
+        // If onboarding not complete, or on privacy settings page, allow access
+        setLoading(false);
       } catch (error) {
         console.error("Error checking onboarding status:", error);
-        // If there's an error (like token expired), redirect to login
-        setShouldRedirect(true);
-      } finally {
+        // If there's an error, redirect to login
+        setRedirectTo('/login');
         setLoading(false);
       }
     };
 
-    checkOnboardingStatus();
-  }, []);
+    // Small delay to ensure state is persisted after login
+    const timeoutId = setTimeout(() => {
+      checkOnboardingStatus();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [isAuthenticated, user, redirectToDashboard, getCurrentUser, hasCheckedToken]);
 
   if (loading) {
     return (
@@ -55,8 +92,15 @@ const ProtectedOnboardingRoute = ({
     );
   }
 
-  if (shouldRedirect) {
-    return <Navigate to={redirectToDashboard} replace />;
+  if (redirectTo) {
+    // Preserve the redirect query param if it exists
+    const searchParams = new URLSearchParams(location.search);
+    const redirectParam = searchParams.get('redirect');
+    const finalRedirect = redirectTo === '/login' && redirectParam 
+      ? `/login?redirect=${encodeURIComponent(redirectParam)}`
+      : redirectTo;
+    
+    return <Navigate to={finalRedirect} replace />;
   }
 
   return <>{children}</>;

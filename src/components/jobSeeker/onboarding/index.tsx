@@ -3,11 +3,69 @@ import { Outlet, Link, useLocation } from "react-router";
 import { useOnboardingStore } from "@/store/onboardingStore";
 import { useEffect } from "react";
 import { Icon } from "@iconify/react";
+import { ProfileService } from "@/services/profile.service";
+import { apiClient } from "@/services/api";
 
 const Index = () => {
-  const { steps, getProgress, setCurrentStep } = useOnboardingStore();
+  const { steps, getProgress, setCurrentStep, hydrateSteps } = useOnboardingStore();
   const location = useLocation();
   const progress = getProgress();
+
+  // Hydrate completed steps based on backend data
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCompletion = async () => {
+      try {
+        const [profile, educationList, experienceList, certificationsList] = await Promise.all([
+          ProfileService.getProfile().catch(() => null),
+          apiClient.get('/profiles/education').then((res) => res.data).catch(() => []),
+          apiClient.get('/profiles/experience').then((res) => res.data).catch(() => []),
+          apiClient.get('/profiles/certifications').then((res) => res.data).catch(() => []),
+        ]);
+
+        if (!isMounted) return;
+
+        const completed: Record<string, boolean> = {};
+
+        if (profile) {
+          const hasAccountInfo = Boolean(profile.country || profile.photoUrl || profile.workPosition);
+          const hasPersonalInfo = Boolean(profile.firstName && profile.lastName && profile.gender);
+          const hasAddress = Boolean(profile.country && profile.state && profile.city);
+          const hasBio = Boolean(profile.bio && profile.bio.trim().length > 0);
+          const hasSkills = Array.isArray(profile.skills) && profile.skills.length > 0;
+
+          if (hasAccountInfo) completed['account-info'] = true;
+          if (hasPersonalInfo) completed['personal-information'] = true;
+          if (hasAddress) completed['address'] = true;
+          if (hasBio) completed['bio'] = true;
+          if (hasSkills) completed['skill'] = true;
+        }
+
+        if (Array.isArray(educationList) && educationList.length > 0) {
+          completed['education'] = true;
+        }
+
+        if (Array.isArray(experienceList) && experienceList.length > 0) {
+          completed['experience'] = true;
+        }
+
+        if (Array.isArray(certificationsList) && certificationsList.length > 0) {
+          completed['certificates'] = true;
+        }
+
+        hydrateSteps(completed);
+      } catch (error) {
+        console.error("Failed to hydrate onboarding steps:", error);
+      }
+    };
+
+    loadCompletion();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [hydrateSteps]);
 
   // Update current step based on route
   useEffect(() => {

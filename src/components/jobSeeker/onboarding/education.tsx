@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { useOnboardingStore } from "@/store/onboardingStore";
 import { ProfileService } from "@/services/profile.service";
+import { UniversityService } from "@/services/university.service";
 
 interface EducationData {
   school: string;
@@ -27,6 +28,12 @@ const Education = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [profileCountry, setProfileCountry] = useState<string | undefined>(undefined);
+  const [universityOptions, setUniversityOptions] = useState<string[]>([]);
+  const [isSearchingUniversities, setIsSearchingUniversities] = useState(false);
+  const [universityError, setUniversityError] = useState("");
+  const [hasSearchedUniversities, setHasSearchedUniversities] = useState(false);
+  const trimmedSchoolQuery = formData.school.trim();
 
   // Load existing education data
   useEffect(() => {
@@ -35,8 +42,11 @@ const Education = () => {
         const profile = await ProfileService.getProfile();
         // Note: Education data structure needs to be defined in backend
         // For now, we'll store it as a JSON field or separate table
-        if (profile?.education) {
-          setFormData(profile.education);
+        if ((profile as any)?.education) {
+          setFormData((profile as any).education);
+        }
+        if (profile?.country) {
+          setProfileCountry(profile.country);
         }
       } catch (err) {
         console.error("Failed to load education:", err);
@@ -50,6 +60,47 @@ const Education = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setError("");
   };
+
+  // Fetch university suggestions dynamically using Hipolabs dataset
+  useEffect(() => {
+    const query = trimmedSchoolQuery;
+
+    if (query.length < 2) {
+      setUniversityOptions([]);
+      setUniversityError("");
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setHasSearchedUniversities(true);
+      setIsSearchingUniversities(true);
+      setUniversityError("");
+
+      try {
+        const universities = await UniversityService.searchUniversities({
+          country: profileCountry,
+          name: query,
+          signal: controller.signal,
+        });
+        // Deduplicate and limit results for better UX
+        const uniqueNames = Array.from(new Set(universities.map((u) => u.name)));
+        setUniversityOptions(uniqueNames.slice(0, 50));
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          console.error("Failed to fetch universities:", err);
+          setUniversityError("Unable to fetch universities. Please continue typing or try again.");
+        }
+      } finally {
+        setIsSearchingUniversities(false);
+      }
+    }, 400);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [trimmedSchoolQuery, profileCountry]);
 
   const handleSubmit = async () => {
     // Validate required fields
@@ -111,12 +162,32 @@ const Education = () => {
                 <input
                   id="school"
                   type="text"
+                  list="global-university-options"
                   value={formData.school}
                   onChange={(e) => handleInputChange('school', e.target.value)}
                   className="py-3 px-4 border border-black/30 rounded-md w-full my-3 focus:outline-none focus:ring-2 focus:ring-black"
-                  placeholder="Enter School Name"
+                  placeholder="Start typing to search global universities"
                   disabled={loading}
                 />
+                <datalist id="global-university-options">
+                  {universityOptions.map((option) => (
+                    <option key={option} value={option} />
+                  ))}
+                </datalist>
+                {isSearchingUniversities && (
+                  <p className="text-xs text-gray-500 mt-1">Searching worldwide universities...</p>
+                )}
+                {universityError && (
+                  <p className="text-xs text-red-500 mt-1">{universityError}</p>
+                )}
+                {!isSearchingUniversities && !universityError && hasSearchedUniversities && universityOptions.length === 0 && trimmedSchoolQuery.length >= 2 && (
+                  <p className="text-xs text-gray-500 mt-1">No matches found. Try a different name.</p>
+                )}
+                {profileCountry && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Suggestions are prioritized for {profileCountry}. Continue typing to see more.
+                  </p>
+                )}
               </div>
 
               <div className="w-full">

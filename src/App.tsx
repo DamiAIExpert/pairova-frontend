@@ -7,12 +7,16 @@ import AuthCallback from "./pages/AuthCallback";
 import VerifyEmail from "./pages/VerifyEmail";
 import Onboarding from "./pages/seeker/onboarding";
 import AccountPage from "./pages/seeker/accountPage";
+import UpdateSeekerProfile from "./components/jobSeeker/profile/UpdateSeekerProfile";
 import AddressPage from "./pages/seeker/addressPage";
 import BioPage from "./pages/seeker/bioPage";
 import InfoPage from "./pages/seeker/infoPage";
 import EducationPage from "./pages/seeker/educationPage";
 import ExperiencePage from "./pages/seeker/experiencePage";
 import SkillPage from "./pages/seeker/skillPage";
+import CertificatesPage from "./pages/seeker/certificatesPage";
+import OtherAttachmentsPage from "./pages/seeker/otherAttachmentsPage";
+import PrivacySettingsPage from "./pages/seeker/privacySettingsPage";
 import Seeker from "./pages/seeker/seeker";
 import JobPage from "./pages/seeker/jobPage";
 import ApplyPage from "./pages/seeker/applyPage";
@@ -22,7 +26,11 @@ import ProfilePage from "./pages/seeker/profilePage";
 import JobReminderPage from "./pages/seeker/jobReminderPage";
 import SettingsPage from "./pages/seeker/settings";
 import PrivacySettings from "./pages/PrivacySettings";
+import MessagerPage from "./pages/seeker/messager";
+import HelpCenterPage from "./pages/seeker/helpCenter";
+import DeleteAccountPage from "./pages/seeker/deleteAccount";
 import ProtectedOnboardingRoute from "./components/ProtectedOnboardingRoute";
+import { AuthListener } from "./components/AuthListener";
 
 // Non Profit
 
@@ -109,6 +117,18 @@ function App() {
           path: "skill",
           element: <SkillPage />,
         },
+        {
+          path: "certificates",
+          element: <CertificatesPage />,
+        },
+        {
+          path: "other-attachments",
+          element: <OtherAttachmentsPage />,
+        },
+        {
+          path: "privacy-settings",
+          element: <PrivacySettingsPage />,
+        },
       ],
     },
     {
@@ -138,12 +158,32 @@ function App() {
           element: <ProfilePage />,
         },
         {
+          path: "edit-account",
+          element: <UpdateSeekerProfile />,
+        },
+        {
           path: "job-reminder",
           element: <JobReminderPage />,
         },
         {
           path: "settings",
           element: <SettingsPage />,
+        },
+        {
+          path: "privacy-settings",
+          element: <PrivacySettingsPage />,
+        },
+        {
+          path: "messager",
+          element: <MessagerPage />,
+        },
+        {
+          path: "help-center",
+          element: <HelpCenterPage />,
+        },
+        {
+          path: "delete-account",
+          element: <DeleteAccountPage />,
         },
       ],
     },
@@ -230,6 +270,7 @@ function App() {
 
   return (
     <div>
+      <AuthListener />
       <Toaster position="top-right" richColors />
       <RouterProvider router={router} />
     </div>

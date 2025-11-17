@@ -11,11 +11,15 @@ export interface UpdateProfileData {
   country?: string;
   state?: string;
   city?: string;
+  postalCode?: string;
+  workPosition?: string;
+  phone?: string;
   photoUrl?: string;
   portfolioUrl?: string;
   skills?: string[];
   experienceLevel?: 'ENTRY' | 'MID' | 'SENIOR' | 'EXECUTIVE';
   preferredEmploymentType?: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'VOLUNTEER' | 'INTERNSHIP';
+  taxId?: string;
 }
 
 export interface ApplicantProfile {
@@ -28,6 +32,8 @@ export interface ApplicantProfile {
   country: string;
   state: string;
   city: string;
+  postalCode?: string;
+  workPosition?: string;
   photoUrl: string;
   portfolioUrl: string;
   skills: string[];
