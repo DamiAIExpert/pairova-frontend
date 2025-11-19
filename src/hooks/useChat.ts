@@ -58,24 +58,24 @@ export function useChat(): UseChatReturn {
         const preserved = prev.filter(c => !existingIds.has(c.id));
         const merged = [...conversationsData, ...preserved];
         
-        // Sort by lastMessageAt (most recent first), then by createdAt
+        // Sort by lastMessage?.sentAt (most recent first), then by createdAt
         // Handle both string and Date formats
         const sorted = merged.sort((a, b) => {
-          const aTime = a.lastMessageAt 
-            ? (typeof a.lastMessageAt === 'string' ? new Date(a.lastMessageAt).getTime() : a.lastMessageAt.getTime())
+          const aTime = a.lastMessage?.sentAt 
+            ? (typeof a.lastMessage.sentAt === 'string' ? new Date(a.lastMessage.sentAt).getTime() : new Date(a.lastMessage.sentAt).getTime())
             : 0;
-          const bTime = b.lastMessageAt 
-            ? (typeof b.lastMessageAt === 'string' ? new Date(b.lastMessageAt).getTime() : b.lastMessageAt.getTime())
+          const bTime = b.lastMessage?.sentAt 
+            ? (typeof b.lastMessage.sentAt === 'string' ? new Date(b.lastMessage.sentAt).getTime() : new Date(b.lastMessage.sentAt).getTime())
             : 0;
           if (aTime !== bTime) {
             return bTime - aTime; // DESC order - most recent first
           }
-          // If lastMessageAt is the same or both null, sort by createdAt
-          const aCreated = a.createdAt 
-            ? (typeof a.createdAt === 'string' ? new Date(a.createdAt).getTime() : a.createdAt.getTime())
+          // If lastMessage?.sentAt is the same or both null, sort by createdAt
+          const aCreated = typeof a.createdAt === 'string' 
+            ? new Date(a.createdAt).getTime()
             : 0;
-          const bCreated = b.createdAt 
-            ? (typeof b.createdAt === 'string' ? new Date(b.createdAt).getTime() : b.createdAt.getTime())
+          const bCreated = typeof b.createdAt === 'string' 
+            ? new Date(b.createdAt).getTime()
             : 0;
           return bCreated - aCreated; // DESC order
         });
@@ -144,24 +144,24 @@ export function useChat(): UseChatReturn {
       setConversations(prev => {
         const updated = [newConversation, ...prev];
         
-        // Sort by lastMessageAt (most recent first), then by createdAt
+        // Sort by lastMessage?.sentAt (most recent first), then by createdAt
         // Handle both string and Date formats
         const sorted = updated.sort((a, b) => {
-          const aTime = a.lastMessageAt 
-            ? (typeof a.lastMessageAt === 'string' ? new Date(a.lastMessageAt).getTime() : a.lastMessageAt.getTime())
+          const aTime = a.lastMessage?.sentAt 
+            ? (typeof a.lastMessage.sentAt === 'string' ? new Date(a.lastMessage.sentAt).getTime() : new Date(a.lastMessage.sentAt).getTime())
             : 0;
-          const bTime = b.lastMessageAt 
-            ? (typeof b.lastMessageAt === 'string' ? new Date(b.lastMessageAt).getTime() : b.lastMessageAt.getTime())
+          const bTime = b.lastMessage?.sentAt 
+            ? (typeof b.lastMessage.sentAt === 'string' ? new Date(b.lastMessage.sentAt).getTime() : new Date(b.lastMessage.sentAt).getTime())
             : 0;
           if (aTime !== bTime) {
             return bTime - aTime; // DESC order - most recent first
           }
-          // If lastMessageAt is the same or both null, sort by createdAt
-          const aCreated = a.createdAt 
-            ? (typeof a.createdAt === 'string' ? new Date(a.createdAt).getTime() : a.createdAt.getTime())
+          // If lastMessage?.sentAt is the same or both null, sort by createdAt
+          const aCreated = typeof a.createdAt === 'string' 
+            ? new Date(a.createdAt).getTime()
             : 0;
-          const bCreated = b.createdAt 
-            ? (typeof b.createdAt === 'string' ? new Date(b.createdAt).getTime() : b.createdAt.getTime())
+          const bCreated = typeof b.createdAt === 'string' 
+            ? new Date(b.createdAt).getTime()
             : 0;
           return bCreated - aCreated; // DESC order
         });
@@ -318,38 +318,36 @@ export function useChat(): UseChatReturn {
     // Optimistically add message to UI
     setMessages(prev => [...prev, optimisticMessage]);
     
-    // Immediately update conversation's lastMessageAt and re-sort to move it to top
-    const now = new Date().toISOString();
+    // Immediately update conversation's lastMessage and re-sort to move it to top
     setConversations(prev => {
       const updated = prev.map(conv => {
         if (conv.id === conversationId) {
           return {
             ...conv,
             lastMessage: optimisticMessage,
-            lastMessageAt: now,
           };
         }
         return conv;
       });
       
-      // Re-sort by lastMessageAt (most recent first), then by createdAt
+      // Re-sort by lastMessage?.sentAt (most recent first), then by createdAt
       // Handle both string and Date formats
       const sorted = updated.sort((a, b) => {
-        const aTime = a.lastMessageAt 
-          ? (typeof a.lastMessageAt === 'string' ? new Date(a.lastMessageAt).getTime() : a.lastMessageAt.getTime())
+        const aTime = a.lastMessage?.sentAt 
+          ? (typeof a.lastMessage.sentAt === 'string' ? new Date(a.lastMessage.sentAt).getTime() : new Date(a.lastMessage.sentAt).getTime())
           : 0;
-        const bTime = b.lastMessageAt 
-          ? (typeof b.lastMessageAt === 'string' ? new Date(b.lastMessageAt).getTime() : b.lastMessageAt.getTime())
+        const bTime = b.lastMessage?.sentAt 
+          ? (typeof b.lastMessage.sentAt === 'string' ? new Date(b.lastMessage.sentAt).getTime() : new Date(b.lastMessage.sentAt).getTime())
           : 0;
         if (aTime !== bTime) {
           return bTime - aTime; // DESC order - most recent first
         }
-        // If lastMessageAt is the same or both null, sort by createdAt
-        const aCreated = a.createdAt 
-          ? (typeof a.createdAt === 'string' ? new Date(a.createdAt).getTime() : a.createdAt.getTime())
+        // If lastMessage?.sentAt is the same or both null, sort by createdAt
+        const aCreated = typeof a.createdAt === 'string' 
+          ? new Date(a.createdAt).getTime()
           : 0;
-        const bCreated = b.createdAt 
-          ? (typeof b.createdAt === 'string' ? new Date(b.createdAt).getTime() : b.createdAt.getTime())
+        const bCreated = typeof b.createdAt === 'string' 
+          ? new Date(b.createdAt).getTime()
           : 0;
         return bCreated - aCreated; // DESC order
       });
@@ -455,31 +453,30 @@ export function useChat(): UseChatReturn {
             return {
               ...conv,
               lastMessage: message,
-              lastMessageAt: message.sentAt,
               unreadCount: message.conversationId === currentConversationRef.current ? 0 : (conv.unreadCount || 0) + 1,
             };
           }
           return conv;
         });
         
-        // Re-sort by lastMessageAt (most recent first), then by createdAt
+        // Re-sort by lastMessage?.sentAt (most recent first), then by createdAt
         // Handle both string and Date formats
         const sorted = updated.sort((a, b) => {
-          const aTime = a.lastMessageAt 
-            ? (typeof a.lastMessageAt === 'string' ? new Date(a.lastMessageAt).getTime() : a.lastMessageAt.getTime())
+          const aTime = a.lastMessage?.sentAt 
+            ? (typeof a.lastMessage.sentAt === 'string' ? new Date(a.lastMessage.sentAt).getTime() : new Date(a.lastMessage.sentAt).getTime())
             : 0;
-          const bTime = b.lastMessageAt 
-            ? (typeof b.lastMessageAt === 'string' ? new Date(b.lastMessageAt).getTime() : b.lastMessageAt.getTime())
+          const bTime = b.lastMessage?.sentAt 
+            ? (typeof b.lastMessage.sentAt === 'string' ? new Date(b.lastMessage.sentAt).getTime() : new Date(b.lastMessage.sentAt).getTime())
             : 0;
           if (aTime !== bTime) {
             return bTime - aTime; // DESC order - most recent first
           }
-          // If lastMessageAt is the same or both null, sort by createdAt
-          const aCreated = a.createdAt 
-            ? (typeof a.createdAt === 'string' ? new Date(a.createdAt).getTime() : a.createdAt.getTime())
+          // If lastMessage?.sentAt is the same or both null, sort by createdAt
+          const aCreated = typeof a.createdAt === 'string' 
+            ? new Date(a.createdAt).getTime()
             : 0;
-          const bCreated = b.createdAt 
-            ? (typeof b.createdAt === 'string' ? new Date(b.createdAt).getTime() : b.createdAt.getTime())
+          const bCreated = typeof b.createdAt === 'string' 
+            ? new Date(b.createdAt).getTime()
             : 0;
           return bCreated - aCreated; // DESC order
         });

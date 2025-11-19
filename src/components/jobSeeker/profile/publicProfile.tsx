@@ -101,8 +101,8 @@ const PublicProfile = () => {
           city: appProfile.city,
           state: appProfile.state,
           country: appProfile.country,
-          gender: appProfile.gender,
-          portfolioUrl: appProfile.portfolioUrl,
+          gender: (appProfile as any).gender,
+          portfolioUrl: (appProfile as any).portfolioUrl,
           skills: appProfile.skills,
         });
         

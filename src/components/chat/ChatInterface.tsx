@@ -320,8 +320,8 @@ const ChatInterface = () => {
     // Find the other participant (not the current user)
     const otherParticipant = conversation.participants?.find(p => p.id !== currentUser?.id);
     if (!otherParticipant) {
-      // Fallback: use conversation title or first participant
-      return conversation.title || conversation.participants?.[0]?.email || "Unknown";
+      // Fallback: use first participant email
+      return conversation.participants?.[0]?.email || "Unknown";
     }
     
     if (otherParticipant.role === 'NONPROFIT' || otherParticipant.role === 'nonprofit') {
