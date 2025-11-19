@@ -155,14 +155,6 @@ function App() {
           element: <ApplyPage />,
         },
         {
-          path: "messages",
-          element: <MessagerPage />,
-        },
-        {
-          path: "settings",
-          element: <SettingsPage />,
-        },
-        {
           path: "finder",
           element: <FinderPage />,
         },

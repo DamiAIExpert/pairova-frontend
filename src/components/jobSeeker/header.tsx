@@ -119,12 +119,12 @@ const Header = () => {
 
         <div className="flex items-center gap-3 md:gap-4">
           {/* Messages Icon */}
-          <div className="relative">
-            <button
-              onClick={() => navigate("/seeker/messages")}
-              className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
-              title="Messages"
-            >
+            <div className="relative">
+              <button
+                onClick={() => navigate("/seeker/profile/messager")}
+                className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+                title="Messages"
+              >
               <Icon icon="lucide:message-circle" className="text-2xl cursor-pointer hover:text-gray-600 transition-colors" />
               {totalUnreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
@@ -200,7 +200,7 @@ const Header = () => {
                   </Link>
 
                   <Link
-                    to="/seeker/messages"
+                    to="/seeker/profile/messager"
                     onClick={() => setShowProfileDropdown(false)}
                     className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
@@ -214,7 +214,7 @@ const Header = () => {
                   </Link>
 
                   <Link
-                    to="/seeker/settings"
+                    to="/seeker/profile/settings"
                     onClick={() => setShowProfileDropdown(false)}
                     className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
