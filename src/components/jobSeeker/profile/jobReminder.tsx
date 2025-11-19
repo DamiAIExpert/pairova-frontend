@@ -105,9 +105,22 @@ const JobReminder = () => {
   // Get organization logo from job
   const getOrganizationLogo = (application: Application): string | null => {
     const job = (application as any).job;
-    if (job?.organization?.logoUrl) return job.organization.logoUrl;
-    if (job?.nonprofit?.logoUrl) return job.nonprofit.logoUrl;
-    return null;
+    const rawLogoUrl = job?.organization?.logoUrl || job?.nonprofit?.logoUrl;
+    
+    if (!rawLogoUrl) return null;
+    
+    // Handle both absolute URLs and relative paths
+    if (rawLogoUrl.startsWith('http://') || rawLogoUrl.startsWith('https://')) {
+      return rawLogoUrl;
+    } else if (rawLogoUrl.startsWith('/')) {
+      // Relative path - prepend API base URL
+      const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://api.pairova.com';
+      return `${apiBaseUrl}${rawLogoUrl}`;
+    } else {
+      // Assume relative path and prepend API base URL with /
+      const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://api.pairova.com';
+      return `${apiBaseUrl}/${rawLogoUrl}`;
+    }
   };
 
   // Get job location
@@ -266,12 +279,22 @@ const JobReminder = () => {
                                 src={orgLogo}
                                 alt={orgName}
                                 className="w-16 h-16 rounded-md object-cover"
+                                onError={(e) => {
+                                  // Fallback to initials if image fails to load
+                                  const img = e.target as HTMLImageElement;
+                                  img.style.display = 'none';
+                                  if (img.nextElementSibling) {
+                                    (img.nextElementSibling as HTMLElement).style.display = 'flex';
+                                  }
+                                }}
                               />
-                            ) : (
-                              <h4 className="text-4xl font-semibold text-white px-7 py-4 rounded-md bg-[#004D40] flex items-center justify-center min-w-[64px] min-h-[64px]">
-                                {initials}
-                              </h4>
-                            )}
+                            ) : null}
+                            <h4 
+                              className="text-4xl font-semibold text-white px-7 py-4 rounded-md bg-[#004D40] flex items-center justify-center min-w-[64px] min-h-[64px]"
+                              style={{ display: orgLogo ? 'none' : 'flex' }}
+                            >
+                              {initials}
+                            </h4>
 
                             <div className="w-full">
                               <div>
@@ -326,7 +349,22 @@ const JobReminder = () => {
                 ) : (
                   filteredSavedJobs.map((job) => {
                     const orgName = job.organization?.orgName || job.nonprofit?.orgName || 'Unknown Organization';
-                    const orgLogo = job.organization?.logoUrl || job.nonprofit?.logoUrl;
+                    const rawLogoUrl = job.organization?.logoUrl || job.nonprofit?.logoUrl;
+                    
+                    // Handle both absolute URLs and relative paths
+                    let orgLogo: string | null = null;
+                    if (rawLogoUrl) {
+                      if (rawLogoUrl.startsWith('http://') || rawLogoUrl.startsWith('https://')) {
+                        orgLogo = rawLogoUrl;
+                      } else if (rawLogoUrl.startsWith('/')) {
+                        const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://api.pairova.com';
+                        orgLogo = `${apiBaseUrl}${rawLogoUrl}`;
+                      } else {
+                        const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://api.pairova.com';
+                        orgLogo = `${apiBaseUrl}/${rawLogoUrl}`;
+                      }
+                    }
+                    
                     const location = [
                       job.locationCity,
                       job.locationState,
@@ -343,12 +381,22 @@ const JobReminder = () => {
                                 src={orgLogo}
                                 alt={orgName}
                                 className="w-16 h-16 rounded-md object-cover"
+                                onError={(e) => {
+                                  // Fallback to initials if image fails to load
+                                  const img = e.target as HTMLImageElement;
+                                  img.style.display = 'none';
+                                  if (img.nextElementSibling) {
+                                    (img.nextElementSibling as HTMLElement).style.display = 'flex';
+                                  }
+                                }}
                               />
-                            ) : (
-                              <h4 className="text-4xl font-semibold text-white px-7 py-4 rounded-md bg-[#004D40] flex items-center justify-center min-w-[64px] min-h-[64px]">
-                                {initials}
-                              </h4>
-                            )}
+                            ) : null}
+                            <h4 
+                              className="text-4xl font-semibold text-white px-7 py-4 rounded-md bg-[#004D40] flex items-center justify-center min-w-[64px] min-h-[64px]"
+                              style={{ display: orgLogo ? 'none' : 'flex' }}
+                            >
+                              {initials}
+                            </h4>
 
                             <div className="w-full">
                               <div>

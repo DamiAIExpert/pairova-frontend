@@ -49,8 +49,13 @@ const BioNpo = () => {
       return;
     }
 
-    if (bio.trim().length < 10) {
-      setError("Bio must be at least 10 characters");
+    if (bio.trim().length < 50) {
+      setError("Bio must be at least 50 characters");
+      return;
+    }
+    
+    if (bio.trim().length > 2000) {
+      setError("Bio must be at most 2000 characters");
       return;
     }
 
@@ -71,7 +76,16 @@ const BioNpo = () => {
       navigate('/non-profit/create-account/mission-statement');
     } catch (err: any) {
       console.error("Failed to save bio:", err);
-      setError(err.response?.data?.message || "Failed to save bio. Please try again.");
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data?.error || 
+                          err.message || 
+                          "Failed to save bio. Please try again.";
+      setError(errorMessage);
+      
+      // Log detailed error for debugging
+      if (err.response?.data) {
+        console.error("Error details:", err.response.data);
+      }
     } finally {
       setLoading(false);
     }

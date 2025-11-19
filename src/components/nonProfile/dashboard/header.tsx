@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { useAuthStore } from "@/store/authStore";
 import { NonprofitService } from "@/services/nonprofit.service";
 import { useState, useEffect, useRef } from "react";
+import { useChat } from "@/hooks/useChat";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -11,7 +12,13 @@ const Header = () => {
   const [orgName, setOrgName] = useState("");
   const [brandLogoError, setBrandLogoError] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const { conversations } = useChat();
+  
+  // Calculate total unread messages
+  const totalUnreadCount = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -32,16 +39,19 @@ const Header = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
       }
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotification(false);
+      }
     };
 
-    if (showDropdown) {
+    if (showDropdown || showNotification) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showDropdown]);
+  }, [showDropdown, showNotification]);
 
   const handleLogout = () => {
     logout();
@@ -73,12 +83,44 @@ const Header = () => {
           </Link>
 
           <div className="flex items-center gap-4">
+            {/* Messages Icon */}
+            <div className="relative">
+              <button
+                onClick={() => navigate("/non-profit/messages")}
+                className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+                title="Messages"
+              >
+                <Icon icon="lucide:message-circle" className="text-2xl cursor-pointer hover:text-gray-600 transition-colors" />
+                {totalUnreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
+                    {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
+                  </span>
+                )}
+              </button>
+            </div>
+
             {/* Notification Bell */}
-            <button className="relative hover:bg-gray-100 p-2 rounded-full transition-colors">
-              <Icon icon="iconoir:bell" className="text-2xl cursor-pointer" />
-              {/* Notification badge - uncomment when notifications are ready */}
-              {/* <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span> */}
-            </button>
+            <div className="relative" ref={notificationRef}>
+              <button
+                onClick={() => setShowNotification(!showNotification)}
+                className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+                title="Notifications"
+              >
+                <Icon icon="iconoir:bell" className="text-2xl cursor-pointer hover:text-gray-600 transition-colors" />
+              </button>
+
+              {/* Notification Dropdown - Add your notification component here */}
+              {showNotification && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-gray-900">Notifications</p>
+                  </div>
+                  <div className="px-4 py-8 text-center text-sm text-gray-500">
+                    No new notifications
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Post a Job Button - Desktop */}
             <Link to="/non-profit/create-job" className="hidden md:block">
@@ -155,6 +197,11 @@ const Header = () => {
                     >
                       <Icon icon="lucide:mail" className="text-lg" />
                       <span>Messages</span>
+                      {totalUnreadCount > 0 && (
+                        <span className="ml-auto bg-red-500 text-white text-xs font-semibold rounded-full px-2 py-0.5">
+                          {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
+                        </span>
+                      )}
                     </Link>
 
                     <Link

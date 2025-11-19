@@ -1,10 +1,19 @@
 import { Icon } from "@iconify/react";
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams, useNavigate } from "react-router";
 import { useChat } from "@/hooks/useChat";
+import { useUser } from "@/store/authStore";
 import { formatDistanceToNow } from "date-fns";
+import { applicationsService, type Application } from "@/services/applications.service";
+import { toast } from "sonner";
 import type { Conversation, Message } from "@/services/chat.service";
 
 const ChatInterface = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const conversationIdParam = searchParams.get('conversationId');
+  const currentUser = useUser();
+  
   const {
     conversations,
     messages,
@@ -18,14 +27,104 @@ const ChatInterface = () => {
     sendMessage,
     sendTypingIndicator,
     markAsRead,
+    fetchConversations,
+    createConversation,
   } = useChat();
 
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [applicants, setApplicants] = useState<Application[]>([]);
+  const [applicantSearchQuery, setApplicantSearchQuery] = useState("");
+  const [loadingApplicants, setLoadingApplicants] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Handle conversationId from URL query parameter
+  const hasProcessedParam = useRef<string | null>(null);
+  const isProcessingRef = useRef(false);
+  
+  useEffect(() => {
+    if (!conversationIdParam) {
+      hasProcessedParam.current = null;
+      isProcessingRef.current = false;
+      return;
+    }
+
+    // If we've already processed this conversationId and it's selected, don't do it again
+    if (hasProcessedParam.current === conversationIdParam && currentConversation?.id === conversationIdParam) {
+      return;
+    }
+
+    // If already processing, don't start another process
+    if (isProcessingRef.current) {
+      return;
+    }
+
+    // If conversation is already selected, just remove the query param
+    if (currentConversation?.id === conversationIdParam) {
+      setSearchParams({}, { replace: true });
+      hasProcessedParam.current = conversationIdParam;
+      return;
+    }
+
+    // Process the conversationId
+    const processConversation = async () => {
+      isProcessingRef.current = true;
+      try {
+        // Small delay to allow state updates from conversation creation to propagate
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Try to find conversation in current list first
+        let conversation = conversations.find(c => c.id === conversationIdParam);
+        
+        if (conversation) {
+          // Conversation found, select it using the conversation object to avoid API call
+          console.log(`✅ Found conversation ${conversationIdParam} in list, selecting...`);
+          await selectConversation(conversationIdParam, conversation);
+          setSearchParams({}, { replace: true });
+          hasProcessedParam.current = conversationIdParam;
+        } else {
+          // Conversation not found, try to refresh list if empty
+          if (conversations.length === 0 && !loading) {
+            console.log('📥 Conversations list is empty, fetching...');
+            await fetchConversations();
+            // Wait a bit for state to update after fetch
+            await new Promise(resolve => setTimeout(resolve, 200));
+            // Check again after state update
+            conversation = conversations.find(c => c.id === conversationIdParam);
+          }
+          
+          if (conversation) {
+            // Found after fetch, select it
+            console.log(`✅ Found conversation ${conversationIdParam} after fetch, selecting...`);
+            await selectConversation(conversationIdParam, conversation);
+            setSearchParams({}, { replace: true });
+            hasProcessedParam.current = conversationIdParam;
+          } else if (!loading) {
+            // Conversation not found, try to select it anyway (it will fetch if needed)
+            // This handles the case where a new conversation was just created
+            // For newly created conversations, wait a bit for backend to finish setup
+            console.log(`🔍 Conversation ${conversationIdParam} not in list, will try to fetch...`);
+            // Increased delay to allow backend to finish creating participant records
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await selectConversation(conversationIdParam);
+            setSearchParams({}, { replace: true });
+            hasProcessedParam.current = conversationIdParam;
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error processing conversation:', error);
+      } finally {
+        isProcessingRef.current = false;
+      }
+    };
+
+    processConversation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationIdParam, conversations.length, currentConversation?.id, selectConversation, loading, fetchConversations, setSearchParams]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -44,6 +143,136 @@ const ChatInterface = () => {
       }
     }
   }, [currentConversation, messages, markAsRead]);
+
+  const fetchApplicants = async () => {
+    try {
+      setLoadingApplicants(true);
+      console.log('🔍 Fetching applicants for nonprofit...');
+      const response = await applicationsService.getNonprofitApplications({ limit: 100 });
+      console.log('✅ Received applications response:', response);
+      
+      if (!response || !response.applications) {
+        console.warn('⚠️ Invalid response structure:', response);
+        setApplicants([]);
+        return;
+      }
+
+      // Get unique applicants (by applicantId)
+      const uniqueApplicants = response.applications.reduce((acc, app) => {
+        if (app.applicantId && !acc.find(a => a.applicantId === app.applicantId)) {
+          acc.push(app);
+        }
+        return acc;
+      }, [] as Application[]);
+      
+      console.log(`✅ Found ${uniqueApplicants.length} unique applicants from ${response.applications.length} applications`);
+      setApplicants(uniqueApplicants);
+      
+      if (uniqueApplicants.length === 0) {
+        toast.info('No applicants found. You need to have applicants for your posted jobs.');
+      }
+    } catch (err: any) {
+      console.error('❌ Failed to fetch applicants:', err);
+      console.error('Error details:', {
+        message: err.message,
+        status: err.status,
+        response: err.response?.data,
+        stack: err.stack
+      });
+      
+      let errorMessage = 'Failed to load applicants';
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      toast.error(errorMessage);
+      setApplicants([]);
+    } finally {
+      setLoadingApplicants(false);
+    }
+  };
+
+  // Fetch conversations on mount
+  useEffect(() => {
+    if (conversations.length === 0 && !loading) {
+      console.log('📥 Fetching conversations on mount...');
+      fetchConversations();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fetch applicants when modal opens
+  useEffect(() => {
+    if (showCreateModal) {
+      fetchApplicants();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showCreateModal]);
+
+  const handleCreateConversation = async (applicantId: string) => {
+    try {
+      setShowCreateModal(false);
+      
+      // Check if conversation already exists in local state
+      let existingConversation = conversations.find(conv => 
+        conv.participants && conv.participants.some(p => p.id === applicantId)
+      );
+
+      // If not found locally, check via API (backend will return existing conversation if found)
+      if (!existingConversation) {
+        try {
+          // Try to create - backend will return existing conversation if one exists
+          const result = await createConversation(applicantId);
+          if (result && result.id) {
+            // Check if this is a newly created conversation or an existing one
+            // by checking if it's already in our list
+            existingConversation = conversations.find(c => c.id === result.id);
+            if (!existingConversation) {
+              // It's a new conversation
+              setSearchParams({ conversationId: result.id });
+              await selectConversation(result.id, result);
+              toast.success('Conversation created');
+              return;
+            } else {
+              // It's an existing conversation that was returned
+              setSearchParams({ conversationId: result.id });
+              await selectConversation(result.id, result);
+              toast.success('Opened existing conversation');
+              return;
+            }
+          }
+        } catch (createError: any) {
+          // If creation fails, it might be because conversation already exists
+          // Try to find it via API
+          console.log('Conversation creation may have failed, checking for existing conversation...');
+        }
+      }
+
+      // If we found an existing conversation, navigate to it
+      if (existingConversation) {
+        setSearchParams({ conversationId: existingConversation.id });
+        await selectConversation(existingConversation.id, existingConversation);
+        toast.success('Opened existing conversation');
+        return;
+      }
+
+      // If we get here, something went wrong
+      toast.error('Failed to create or find conversation');
+    } catch (error: any) {
+      console.error('Error creating conversation:', error);
+      toast.error(error.message || 'Failed to create conversation');
+    }
+  };
+
+  const filteredApplicants = applicants.filter(app => {
+    if (!applicantSearchQuery.trim()) return true;
+    const name = `${app.applicant?.applicantProfile?.firstName || ''} ${app.applicant?.applicantProfile?.lastName || ''}`.trim().toLowerCase();
+    const email = app.applicant?.email?.toLowerCase() || '';
+    const query = applicantSearchQuery.toLowerCase();
+    return name.includes(query) || email.includes(query);
+  });
 
   const handleSendMessage = () => {
     if (!messageText.trim() && !selectedFile) return;
@@ -88,10 +317,14 @@ const ChatInterface = () => {
   };
 
   const getParticipantName = (conversation: Conversation) => {
-    const otherParticipant = conversation.participants.find(p => p.id !== conversation.id);
-    if (!otherParticipant) return "Unknown";
+    // Find the other participant (not the current user)
+    const otherParticipant = conversation.participants?.find(p => p.id !== currentUser?.id);
+    if (!otherParticipant) {
+      // Fallback: use conversation title or first participant
+      return conversation.title || conversation.participants?.[0]?.email || "Unknown";
+    }
     
-    if (otherParticipant.role === 'NONPROFIT') {
+    if (otherParticipant.role === 'NONPROFIT' || otherParticipant.role === 'nonprofit') {
       return otherParticipant.profile?.orgName || otherParticipant.email;
     }
     
@@ -101,12 +334,14 @@ const ChatInterface = () => {
   };
 
   const getParticipantAvatar = (conversation: Conversation) => {
-    const otherParticipant = conversation.participants.find(p => p.id !== conversation.id);
+    // Find the other participant (not the current user)
+    const otherParticipant = conversation.participants?.find(p => p.id !== currentUser?.id);
     return otherParticipant?.profile?.photoUrl || otherParticipant?.profile?.logoUrl || "";
   };
 
   const isUserOnline = (conversation: Conversation) => {
-    const otherParticipant = conversation.participants.find(p => p.id !== conversation.id);
+    // Find the other participant (not the current user)
+    const otherParticipant = conversation.participants?.find(p => p.id !== currentUser?.id);
     return otherParticipant ? onlineUsers.has(otherParticipant.id) : false;
   };
 
@@ -157,7 +392,10 @@ const ChatInterface = () => {
               <Icon icon="mynaui:envelope" className="text-2xl" />
               <h2 className="text-xl font-semibold">Message</h2>
             </div>
-            <button className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-md hover:bg-black/80 transition-colors text-sm">
+            <button 
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-md hover:bg-black/80 transition-colors text-sm"
+            >
               <Icon icon="material-symbols:add" className="text-lg" />
               Create
             </button>
@@ -282,9 +520,32 @@ const ChatInterface = () => {
                 </div>
               </div>
 
-              <div className="text-sm text-gray-500">
+              <div className="flex items-center gap-3">
+                {/* Call Icons */}
+                <button
+                  onClick={() => {
+                    // TODO: Implement voice call functionality
+                    toast.info("Voice call feature coming soon");
+                  }}
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  title="Voice Call"
+                >
+                  <Icon icon="lucide:phone" className="text-gray-600 text-xl" />
+                </button>
+                <button
+                  onClick={() => {
+                    // TODO: Implement video call functionality
+                    toast.info("Video call feature coming soon");
+                  }}
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  title="Video Call"
+                >
+                  <Icon icon="lucide:video" className="text-gray-600 text-xl" />
+                </button>
+                
+                {/* Unread Count */}
                 {currentConversation.unreadCount > 0 && (
-                  <span className="bg-blue-500 text-white px-2 py-1 rounded-full mr-3">
+                  <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-sm">
                     {currentConversation.unreadCount} new messages
                   </span>
                 )}
@@ -303,13 +564,20 @@ const ChatInterface = () => {
               ) : (
                 <div className="space-y-4">
                   {messages.map((msg) => {
-                    const isMine = msg.sender.id !== currentConversation.id;
+                    // Check if message is from current user
+                    const isMine = msg.sender.id === currentUser?.id;
+                    const senderName = isMine 
+                      ? "You" 
+                      : (msg.sender.profile?.firstName && msg.sender.profile?.lastName
+                          ? `${msg.sender.profile.firstName} ${msg.sender.profile.lastName}`.trim()
+                          : msg.sender.profile?.orgName || msg.sender.email || "Unknown");
+                    
                     return (
                       <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[60%] ${isMine ? 'order-2' : 'order-1'}`}>
                           {!isMine && (
                             <p className="text-xs text-gray-500 mb-1">
-                              Admin · {new Date(msg.sentAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                              {senderName} · {new Date(msg.sentAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           )}
                           <div
@@ -340,7 +608,7 @@ const ChatInterface = () => {
                       </div>
                     );
                   })}
-                  <div ref={messagesEndRef} />
+                  <div ref={messagesEndRef} data-messages-end />
                 </div>
               )}
             </div>
@@ -385,7 +653,7 @@ const ChatInterface = () => {
                   disabled={!messageText.trim() && !selectedFile}
                   className="bg-black text-white px-6 py-3 rounded-md hover:bg-black/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Respond
+                  Send
                 </button>
               </div>
             </div>
@@ -410,11 +678,120 @@ const ChatInterface = () => {
           </div>
         </div>
       )}
+
+      {/* Create Conversation Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-2xl max-h-[80vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Start New Conversation</h2>
+                <p className="text-sm text-gray-600 mt-1">Select an applicant to start messaging</p>
+              </div>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <Icon icon="mdi:close" className="text-xl text-gray-500" />
+              </button>
+            </div>
+
+            {/* Search */}
+            <div className="p-4 border-b border-gray-200">
+              <div className="relative">
+                <Icon icon="iconamoon:search-light" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search applicants by name or email..."
+                  value={applicantSearchQuery}
+                  onChange={(e) => setApplicantSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+            </div>
+
+            {/* Applicants List */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {loadingApplicants ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+                  <span className="ml-3 text-gray-600">Loading applicants...</span>
+                </div>
+              ) : filteredApplicants.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <Icon icon="mynaui:envelope" className="text-5xl mx-auto mb-3 opacity-30" />
+                  {applicantSearchQuery ? (
+                    <>
+                      <p>No applicants found matching "{applicantSearchQuery}"</p>
+                      <p className="text-sm mt-2">Try a different search term</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-medium mb-2">No applicants found</p>
+                      <p className="text-sm">You need to have applicants for your posted jobs to start conversations.</p>
+                      <button
+                        onClick={() => {
+                          setShowCreateModal(false);
+                          navigate('/non-profit/recruitment-board');
+                        }}
+                        className="mt-4 text-sm text-blue-600 hover:text-blue-700 underline"
+                      >
+                        Go to Recruitment Board
+                      </button>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredApplicants.map((application) => {
+                    const profile = application.applicant?.applicantProfile;
+                    const fullName = profile
+                      ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
+                      : 'Anonymous';
+                    const avatar = profile?.photoUrl;
+                    const email = application.applicant?.email || 'No email';
+                    const jobTitle = application.job?.title || 'Position';
+
+                    return (
+                      <button
+                        key={application.id}
+                        onClick={() => handleCreateConversation(application.applicantId)}
+                        className="w-full p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all text-left flex items-center gap-3 group"
+                      >
+                        <div className="relative flex-shrink-0">
+                          <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
+                            {avatar ? (
+                              <img src={avatar} alt={fullName} className="w-full h-12 object-cover" />
+                            ) : (
+                              <Icon icon="lucide:user" className="text-gray-400 text-2xl" />
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 truncate">{fullName || 'Anonymous'}</h3>
+                          <p className="text-sm text-gray-600 truncate">{email}</p>
+                          <p className="text-xs text-gray-500 mt-1 truncate">{jobTitle}</p>
+                        </div>
+                        <Icon 
+                          icon="mdi:chevron-right" 
+                          className="text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0" 
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default ChatInterface;
+
 
 
 

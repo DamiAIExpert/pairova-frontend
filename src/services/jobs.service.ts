@@ -159,6 +159,32 @@ export interface Application {
     firstName: string;
     lastName: string;
     email: string;
+    applicantProfile?: {
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      photoUrl?: string;
+    };
+  };
+  job?: {
+    id: string;
+    title: string;
+    description: string;
+    employmentType?: string;
+    placement?: JobPlacement;
+    locationCity?: string;
+    locationState?: string;
+    locationCountry?: string;
+    organization?: {
+      id?: string;
+      orgName: string;
+      logoUrl?: string;
+    };
+    nonprofit?: {
+      id?: string;
+      orgName: string;
+      logoUrl?: string;
+    };
   };
 }
 

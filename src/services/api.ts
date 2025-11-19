@@ -26,6 +26,8 @@ const API_VERSION = ''; // Backend doesn't use /api/v1 prefix
 class ApiClient {
   private baseURL: string;
   private token: string | null = null;
+  private logoutInProgress: boolean = false;
+  private logoutTimeoutId: NodeJS.Timeout | null = null;
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
@@ -44,6 +46,8 @@ class ApiClient {
     if (typeof window !== 'undefined') {
       if (token) {
         localStorage.setItem('auth_token', token);
+        // Reset logout flag when token is set
+        this.logoutInProgress = false;
       } else {
         localStorage.removeItem('auth_token');
       }
@@ -59,14 +63,15 @@ class ApiClient {
     // Create abort controller for timeout
     // - 60 seconds for file uploads (Cloudinary can be slow)
     // - 45 seconds for job creation (can be slow with many fields and database operations)
-    // - 30 seconds for registration, saved-jobs, and nonprofit job queries (database operations can be slow)
+    // - 30 seconds for registration, saved-jobs, nonprofit job queries, and chat endpoints (database operations can be slow)
     // - 15 seconds for others
     const isUpload = endpoint.includes('/upload');
     const isRegistration = endpoint.includes('/register');
     const isSavedJobs = endpoint.includes('/saved-jobs');
     const isNonprofitJobs = endpoint.includes('/ngos/me/jobs');
     const isJobCreation = endpoint.includes('/ngos/me/jobs') && options.method === 'POST';
-    const timeoutMs = isUpload ? 60000 : (isJobCreation ? 45000 : (isRegistration || isSavedJobs || isNonprofitJobs ? 30000 : 15000));
+    const isChat = endpoint.includes('/chat');
+    const timeoutMs = isUpload ? 60000 : (isJobCreation ? 45000 : (isRegistration || isSavedJobs || isNonprofitJobs || isChat ? 30000 : 15000));
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     
@@ -105,16 +110,60 @@ class ApiClient {
         };
         
         // Automatically handle 401 errors (token expired/invalid)
+        // Use debounce to prevent multiple logout attempts from concurrent requests
         if (response.status === 401) {
-          authUtils.clearToken();
-          // Clear auth store if available
-          if (typeof window !== 'undefined') {
-            // Dispatch a custom event that auth store can listen to
-            window.dispatchEvent(new CustomEvent('auth:token-expired'));
-            // Redirect to login with current path as redirect
-            const currentPath = window.location.pathname + window.location.search;
-            window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+          // Only logout if this request was actually authenticated (had Authorization header)
+          // This prevents logout on endpoints that don't require auth or on requests without tokens
+          const hadAuthHeader = !!(config.headers as any)?.Authorization;
+          const currentToken = this.token || this.getStoredToken();
+          
+          if (!hadAuthHeader || !currentToken) {
+            // Request wasn't authenticated, so 401 is expected - don't logout
+            throw error;
           }
+          
+          // Check if this is a permission error (not a token expiration)
+          // Permission errors have specific messages like "not authorized to view"
+          const errorMessage = (errorData.message || '').toLowerCase();
+          const isPermissionError = errorMessage.includes('not authorized') || 
+                                   errorMessage.includes('permission denied') ||
+                                   errorMessage.includes('access denied');
+          
+          if (isPermissionError) {
+            // This is a permission issue, not a token expiration - don't logout
+            // Just throw the error so the caller can handle it appropriately
+            throw error;
+          }
+          
+          // Clear any pending logout
+          if (this.logoutTimeoutId) {
+            clearTimeout(this.logoutTimeoutId);
+          }
+          
+          // Debounce logout to handle multiple concurrent 401 errors
+          this.logoutTimeoutId = setTimeout(() => {
+            if (this.logoutInProgress) {
+              return; // Already processing logout
+            }
+            
+            // Double-check token still exists and request was authenticated
+            const tokenCheck = this.token || this.getStoredToken();
+            if (!tokenCheck) {
+              return; // Token already cleared, no need to logout again
+            }
+            
+            this.logoutInProgress = true;
+            authUtils.clearToken();
+            
+            // Clear auth store if available
+            if (typeof window !== 'undefined') {
+              // Dispatch a custom event that auth store can listen to
+              window.dispatchEvent(new CustomEvent('auth:token-expired'));
+              // Redirect to login with current path as redirect
+              const currentPath = window.location.pathname + window.location.search;
+              window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+            }
+          }, 300); // 300ms debounce to allow concurrent requests to complete
         }
         
         throw error;

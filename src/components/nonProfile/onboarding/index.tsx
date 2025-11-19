@@ -1,8 +1,10 @@
 import { Progress } from "@/components/ui/progress";
-import { Outlet, Link } from "react-router";
+import { Outlet, Link, useLocation } from "react-router";
 import { useState, useEffect } from "react";
+import { Icon } from "@iconify/react";
 
 const Index = () => {
+  const location = useLocation();
   const [progress, setProgress] = useState(0);
 
   // Calculate progress based on completed sections
@@ -42,7 +44,20 @@ const Index = () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('npoProgressUpdate', handleStorageChange);
     };
-  }, []);
+  }, [location.pathname]); // Recalculate when location changes
+
+  // Check if a step is completed
+  const isStepCompleted = (stepKey: string) => {
+    return localStorage.getItem(stepKey) === 'completed';
+  };
+
+  // Check if a step is active
+  const isStepActive = (path: string) => {
+    if (path === '' && location.pathname === '/non-profit/create-account') {
+      return true;
+    }
+    return location.pathname.includes(path);
+  };
 
   return (
     <div>
@@ -71,44 +86,79 @@ const Index = () => {
               </div>
 
               <Link to="">
-                <div className="border-b border-black/30 p-5">
+                <div className={`border-b border-black/30 p-5 flex items-center justify-between ${
+                  isStepActive('') ? 'bg-gray-100' : ''
+                }`}>
                   <p>Account Info</p>
+                  {isStepCompleted('npo_accountInfo') && (
+                    <Icon icon="mdi:check-circle" className="text-green-600 text-xl" />
+                  )}
                 </div>
               </Link>
 
               <Link to="company-info">
-                <div className="border-b border-black/30 p-5">
+                <div className={`border-b border-black/30 p-5 flex items-center justify-between ${
+                  isStepActive('company-info') ? 'bg-gray-100' : ''
+                }`}>
                   <p>Company Information</p>
+                  {isStepCompleted('npo_companyInfo') && (
+                    <Icon icon="mdi:check-circle" className="text-green-600 text-xl" />
+                  )}
                 </div>
               </Link>
 
               <Link to="address">
-                <div className="border-b border-black/30 p-5">
+                <div className={`border-b border-black/30 p-5 flex items-center justify-between ${
+                  isStepActive('address') ? 'bg-gray-100' : ''
+                }`}>
                   <p>Address</p>
+                  {isStepCompleted('npo_address') && (
+                    <Icon icon="mdi:check-circle" className="text-green-600 text-xl" />
+                  )}
                 </div>
               </Link>
 
               <Link to="bio">
-                <div className="border-b border-black/30 p-5">
+                <div className={`border-b border-black/30 p-5 flex items-center justify-between ${
+                  isStepActive('bio') ? 'bg-gray-100' : ''
+                }`}>
                   <p>Bio</p>
+                  {isStepCompleted('npo_bio') && (
+                    <Icon icon="mdi:check-circle" className="text-green-600 text-xl" />
+                  )}
                 </div>
               </Link>
 
               <Link to="mission-statement">
-                <div className="border-b border-black/30 p-5">
-                  <p>Mission Statemrnt</p>
+                <div className={`border-b border-black/30 p-5 flex items-center justify-between ${
+                  isStepActive('mission-statement') ? 'bg-gray-100' : ''
+                }`}>
+                  <p>Mission Statement</p>
+                  {isStepCompleted('npo_mission') && (
+                    <Icon icon="mdi:check-circle" className="text-green-600 text-xl" />
+                  )}
                 </div>
               </Link>
 
               <Link to="values">
-                <div className="border-b border-black/30 p-5">
+                <div className={`border-b border-black/30 p-5 flex items-center justify-between ${
+                  isStepActive('values') ? 'bg-gray-100' : ''
+                }`}>
                   <p>Our Values</p>
+                  {isStepCompleted('npo_values') && (
+                    <Icon icon="mdi:check-circle" className="text-green-600 text-xl" />
+                  )}
                 </div>
               </Link>
 
               <Link to="skills">
-                <div className="border-b border-black/30 p-5">
-                  <p>Skill</p>
+                <div className={`border-b border-black/30 p-5 flex items-center justify-between ${
+                  isStepActive('skills') ? 'bg-gray-100' : ''
+                }`}>
+                  <p>Skills</p>
+                  {isStepCompleted('npo_skills') && (
+                    <Icon icon="mdi:check-circle" className="text-green-600 text-xl" />
+                  )}
                 </div>
               </Link>
             </div>

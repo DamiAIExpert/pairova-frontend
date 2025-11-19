@@ -95,6 +95,7 @@ class ChatService {
     
     this.socket = io(SOCKET_URL, {
       auth: { token: rawToken }, // Pass raw token in auth object
+      query: { token: rawToken }, // Also pass in query string as fallback
       extraHeaders: {
         Authorization: bearerToken, // Also pass in header as fallback
       },
@@ -122,23 +123,30 @@ class ChatService {
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('❌ Disconnected from chat server:', reason);
+      // Only log disconnect if it wasn't intentional (not during cleanup)
+      if (reason !== 'io client disconnect') {
+        console.log('❌ Disconnected from chat server:', reason);
+      }
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('🔴 Connection error:', error);
-      console.error('🔴 Error details:', {
-        message: error.message,
-        description: (error as any).description,
-        context: (error as any).context,
-        type: (error as any).type,
-        data: (error as any).data,
-      });
-      console.error('🔴 Socket URL:', SOCKET_URL);
-      this.reconnectAttempts++;
-      
-      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.error('Max reconnection attempts reached');
+      // Only log connection errors if socket is still trying to connect
+      // Suppress errors during cleanup/disconnect
+      if (this.socket && this.socket.active) {
+        console.error('🔴 Connection error:', error);
+        console.error('🔴 Error details:', {
+          message: error.message,
+          description: (error as any).description,
+          context: (error as any).context,
+          type: (error as any).type,
+          data: (error as any).data,
+        });
+        console.error('🔴 Socket URL:', SOCKET_URL);
+        this.reconnectAttempts++;
+        
+        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+          console.error('Max reconnection attempts reached');
+        }
       }
     });
 
@@ -152,10 +160,10 @@ class ChatService {
    */
   disconnect() {
     if (this.socket) {
+      // Disconnect silently (intentional disconnect, no need to log)
       this.socket.disconnect();
       this.socket = null;
       this._token = null;
-      console.log('Disconnected from chat server');
     }
   }
 

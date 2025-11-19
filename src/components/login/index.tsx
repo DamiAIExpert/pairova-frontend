@@ -1,10 +1,11 @@
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login, isLoading, error, clearError } = useAuthStore();
   
   const [formData, setFormData] = useState({
@@ -32,28 +33,63 @@ const Index = () => {
       setLoginError("");
       const response = await login(formData.email, formData.password);
       
+      // Check if there's a redirect parameter
+      const redirectParam = searchParams.get('redirect');
+      
       // Check onboarding status and redirect accordingly
       const user = response.user;
       
       if (!user.hasCompletedOnboarding) {
-        // Redirect to onboarding
-        if (user.role === 'applicant') {
-          navigate('/seeker/create-account');
-        } else if (user.role === 'nonprofit') {
-          navigate('/non-profit/create-account');
+        // Redirect to onboarding (can't skip this)
+        // Preserve redirect parameter for after onboarding if it exists
+        if (redirectParam) {
+          if (user.role === 'applicant') {
+            navigate(`/seeker/create-account?redirect=${encodeURIComponent(redirectParam)}`, { replace: true });
+          } else if (user.role === 'nonprofit') {
+            navigate(`/non-profit/create-account?redirect=${encodeURIComponent(redirectParam)}`, { replace: true });
+          } else {
+            navigate(`/seeker/create-account?redirect=${encodeURIComponent(redirectParam)}`, { replace: true });
+          }
         } else {
-          navigate('/seeker/create-account'); // Default fallback
+          if (user.role === 'applicant') {
+            navigate('/seeker/create-account', { replace: true });
+          } else if (user.role === 'nonprofit') {
+            navigate('/non-profit/create-account', { replace: true });
+          } else {
+            navigate('/seeker/create-account', { replace: true }); // Default fallback
+          }
         }
       } else {
-        // Onboarding complete - redirect to dashboard
-        if (user.role === 'applicant') {
-          navigate('/seeker');
-        } else if (user.role === 'nonprofit') {
-          navigate('/non-profit');
-        } else if (user.role === 'admin') {
-          navigate('/admin');
+        // Onboarding complete - check for redirect parameter first
+        if (redirectParam) {
+          // Use the redirect parameter if provided
+          // Decode the redirect URL safely
+          try {
+            const decodedRedirect = decodeURIComponent(redirectParam);
+            // Use replace to avoid adding to history and prevent navigation issues
+            navigate(decodedRedirect, { replace: true });
+          } catch (error) {
+            console.error('Error decoding redirect URL:', error);
+            // Fallback to default dashboard if redirect URL is invalid
+            if (user.role === 'applicant') {
+              navigate('/seeker', { replace: true });
+            } else if (user.role === 'nonprofit') {
+              navigate('/non-profit', { replace: true });
+            } else {
+              navigate('/seeker', { replace: true });
+            }
+          }
         } else {
-          navigate('/seeker'); // Default fallback
+          // Otherwise redirect to dashboard based on role
+          if (user.role === 'applicant') {
+            navigate('/seeker', { replace: true });
+          } else if (user.role === 'nonprofit') {
+            navigate('/non-profit', { replace: true });
+          } else if (user.role === 'admin') {
+            navigate('/admin', { replace: true });
+          } else {
+            navigate('/seeker', { replace: true }); // Default fallback
+          }
         }
       }
     } catch (err: any) {
@@ -89,6 +125,39 @@ const Index = () => {
               Let’s get started already. Join our 100%
               <br /> remote network of creators and freelancers{" "}
             </p>
+          </div>
+
+          {/* OAuth Login Buttons */}
+          <div className="my-3">
+            <button 
+              onClick={() => {
+                const apiUrl = import.meta.env.VITE_API_URL || 'https://api.pairova.com';
+                window.location.href = `${apiUrl}/auth/google`;
+              }}
+              className="border border-[#818181] w-full py-3 flex items-center gap-3 justify-center rounded-md my-3 hover:bg-gray-50 transition-colors"
+              type="button"
+            >
+              <Icon icon="flat-color-icons:google" className="text-2xl" />
+              Sign in with Google
+            </button>
+
+            <button 
+              onClick={() => {
+                const apiUrl = import.meta.env.VITE_API_URL || 'https://api.pairova.com';
+                window.location.href = `${apiUrl}/auth/linkedin`;
+              }}
+              className="border border-[#818181] w-full py-3 flex items-center gap-3 justify-center rounded-md my-3 hover:bg-gray-50 transition-colors"
+              type="button"
+            >
+              <Icon icon="devicon:linkedin" className="text-2xl" />
+              Sign in with LinkedIn
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4 my-4">
+            <p className="bg-[#969696] h-[1px] w-full"></p>
+            <p className="text-sm text-gray-600">OR</p>
+            <p className="bg-[#969696] h-[1px] w-full"></p>
           </div>
 
           <form onSubmit={handleSubmit} className="my-3">

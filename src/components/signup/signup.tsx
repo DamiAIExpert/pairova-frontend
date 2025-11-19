@@ -201,11 +201,17 @@ const Signup = ({ setStep, onSignupSuccess }: SignupProps) => {
               <div className="my-3">
                 <button 
                   onClick={() => {
+                    if (!selectedRole) {
+                      setError("Please select your role first");
+                      return;
+                    }
                     const apiUrl = import.meta.env.VITE_API_URL || 'https://api.pairova.com';
-                    window.location.href = `${apiUrl}/auth/google`;
+                    const role = selectedRole === "nonProfit" ? "nonprofit" : "applicant";
+                    window.location.href = `${apiUrl}/auth/google?role=${role}`;
                   }}
-                  className="border border-[#818181] w-full py-3 flex items-center gap-3 justify-center rounded-md my-3 hover:bg-gray-50 transition-colors"
+                  className="border border-[#818181] w-full py-3 flex items-center gap-3 justify-center rounded-md my-3 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   type="button"
+                  disabled={!selectedRole}
                 >
                   <Icon icon="flat-color-icons:google" className="text-2xl" />
                   Sign up with Google
@@ -213,11 +219,17 @@ const Signup = ({ setStep, onSignupSuccess }: SignupProps) => {
 
                 <button 
                   onClick={() => {
+                    if (!selectedRole) {
+                      setError("Please select your role first");
+                      return;
+                    }
                     const apiUrl = import.meta.env.VITE_API_URL || 'https://api.pairova.com';
-                    window.location.href = `${apiUrl}/auth/linkedin`;
+                    const role = selectedRole === "nonProfit" ? "nonprofit" : "applicant";
+                    window.location.href = `${apiUrl}/auth/linkedin?role=${role}`;
                   }}
-                  className="border border-[#818181] w-full py-3 flex items-center gap-3 justify-center rounded-md my-3 hover:bg-gray-50 transition-colors"
+                  className="border border-[#818181] w-full py-3 flex items-center gap-3 justify-center rounded-md my-3 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   type="button"
+                  disabled={!selectedRole}
                 >
                   <Icon icon="devicon:linkedin" className="text-2xl" />
                   Sign up with LinkedIn

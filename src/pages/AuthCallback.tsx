@@ -67,16 +67,16 @@ const AuthCallback = () => {
                 console.log('✅ Redirecting to /seeker/create-account');
                 navigate('/seeker/create-account');
               } else {
-                console.log('✅ Redirecting to /nonprofit/create-account');
-                navigate('/nonprofit/create-account');
+                console.log('✅ Redirecting to /non-profit/create-account');
+                navigate('/non-profit/create-account');
               }
             } else {
               if (userProfile.role === 'applicant') {
-                console.log('✅ Redirecting to /seeker/dashboard');
-                navigate('/seeker/dashboard');
+                console.log('✅ Redirecting to /seeker');
+                navigate('/seeker');
               } else {
-                console.log('✅ Redirecting to /nonprofit/dashboard');
-                navigate('/nonprofit/dashboard');
+                console.log('✅ Redirecting to /non-profit');
+                navigate('/non-profit');
               }
             }
           } else {

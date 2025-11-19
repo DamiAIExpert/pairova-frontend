@@ -35,7 +35,7 @@ const BoardLayout = () => {
               <div className="my-5">
                 <Link to="/non-profit/recruitment-board">
                   <button className={`flex gap-4 cursor-pointer hover:bg-black/10 w-full py-2 px-3 rounded-md ease-in duration-100 ${
-                    isActive("/non-profit/recruitment-board") 
+                    isActive("/non-profit/recruitment-board") || location.pathname.includes("/applicants/")
                       ? "bg-gray-100 border-b-2 border-red-500" 
                       : ""
                   }`}>

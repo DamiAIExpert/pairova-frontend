@@ -1,5 +1,5 @@
 import { Icon } from "@iconify/react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { useState, useEffect, useRef } from "react";
 import { useOnboardingStore } from "@/store/onboardingStore";
 import { useAuthStore } from "@/store/authStore";
@@ -20,6 +20,7 @@ interface FileItem {
 
 const OtherAttachments = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { setStepCompleted, resetProgress } = useOnboardingStore();
   const { user, setUser } = useAuthStore();
   const [attachedFiles, setAttachedFiles] = useState<FileItem[]>([]);
@@ -171,8 +172,21 @@ const OtherAttachments = () => {
       // Reset onboarding progress for next time
       resetProgress();
 
-      // Navigate to privacy settings (next step after onboarding)
-      navigate('/seeker/create-account/privacy-settings');
+      // Check for redirect parameter
+      const redirectParam = searchParams.get('redirect');
+      if (redirectParam) {
+        // If redirect parameter exists, skip privacy settings and go directly to the redirect
+        try {
+          const decodedRedirect = decodeURIComponent(redirectParam);
+          navigate(decodedRedirect, { replace: true });
+        } catch (error) {
+          console.error('Error decoding redirect URL:', error);
+          navigate('/seeker/create-account/privacy-settings', { replace: true });
+        }
+      } else {
+        // Otherwise navigate to privacy settings (next step after onboarding)
+        navigate('/seeker/create-account/privacy-settings', { replace: true });
+      }
     } catch (err: any) {
       console.error("Failed to complete onboarding:", err);
       setError(err.response?.data?.message || "Failed to complete setup. Please try again.");

@@ -23,6 +23,8 @@ import ApplyPage from "./pages/seeker/applyPage";
 import FinderPage from "./pages/seeker/finderPage";
 import ProfileRoot from "./pages/seeker/profileRoot";
 import ProfilePage from "./pages/seeker/profilePage";
+import PublicProfile from "./components/jobSeeker/profile/publicProfile";
+import PublicProfileWrapper from "./components/jobSeeker/profile/publicProfileWrapper";
 import JobReminderPage from "./pages/seeker/jobReminderPage";
 import SettingsPage from "./pages/seeker/settings";
 import PrivacySettings from "./pages/PrivacySettings";
@@ -46,6 +48,7 @@ import ProfileDashboard from "./pages/npo/dashboard/profileDashboard";
 import JobNpo from "./pages/npo/dashboard/jobNpo";
 import CreateJobNpo from "./pages/npo/dashboard/createJobNpo";
 import RecruitmentBoard from "./pages/npo/dashboard/recruitmentBoard";
+import CandidateDetail from "./components/nonProfile/dashboard/recruitmentBoard/candidateDetail";
 import NonprofitSettings from "./pages/npo/settings";
 import NonprofitMessages from "./pages/npo/messages";
 import NonprofitHelpCenter from "./pages/npo/helpCenter";
@@ -80,6 +83,10 @@ function App() {
     {
       path: "/jobs/:id",
       element: <JobPage />,
+    },
+    {
+      path: "/profiles/applicant/:applicantId",
+      element: <PublicProfileWrapper />,
     },
     {
       path: "/seeker/create-account",
@@ -247,6 +254,14 @@ function App() {
         {
           path: "recruitment-board",
           element: <RecruitmentBoard />,
+        },
+        {
+          path: "recruitment-board/:jobId/:applicationId",
+          element: <CandidateDetail />,
+        },
+        {
+          path: "applicants/:applicantId/profile",
+          element: <PublicProfile />,
         },
         {
           path: "settings",

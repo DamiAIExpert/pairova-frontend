@@ -1,5 +1,5 @@
 import { Icon } from "@iconify/react";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation, useSearchParams } from "react-router";
 import { useState, useEffect } from "react";
 import { PrivacyService, type PrivacySettings } from "@/services/privacy.service";
 import { Switch } from "@/components/ui/switch";
@@ -18,6 +18,7 @@ interface DataCategorySettings {
 const PrivacySettingsOnboarding = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { user } = useAuthStore();
   
   // Check if we're in onboarding flow or standalone page
@@ -111,19 +112,38 @@ const PrivacySettingsOnboarding = () => {
 
       setBackendSettings(updated);
 
+      // Check for redirect parameter
+      const redirectParam = searchParams.get('redirect');
+
       // Navigate based on context
-      if (isOnboardingFlow) {
+      if (redirectParam) {
+        // Use the redirect parameter if provided
+        try {
+          const decodedRedirect = decodeURIComponent(redirectParam);
+          navigate(decodedRedirect, { replace: true });
+        } catch (error) {
+          console.error('Error decoding redirect URL:', error);
+          // Fallback to default navigation
+          if (user?.role === 'applicant') {
+            navigate("/seeker", { replace: true });
+          } else if (user?.role === 'nonprofit') {
+            navigate("/non-profit", { replace: true });
+          } else {
+            navigate("/seeker", { replace: true });
+          }
+        }
+      } else if (isOnboardingFlow) {
         // After onboarding, go to dashboard
         if (user?.role === 'applicant') {
-          navigate("/seeker");
+          navigate("/seeker", { replace: true });
         } else if (user?.role === 'nonprofit') {
-          navigate("/non-profit");
+          navigate("/non-profit", { replace: true });
         } else {
-          navigate("/seeker");
+          navigate("/seeker", { replace: true });
         }
       } else {
         // Standalone page - go back or to dashboard
-        navigate("/seeker");
+        navigate("/seeker", { replace: true });
       }
     } catch (err: any) {
       console.error("Failed to save privacy settings:", err);

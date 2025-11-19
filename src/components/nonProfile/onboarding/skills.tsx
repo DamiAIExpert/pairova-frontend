@@ -1,5 +1,5 @@
 import { Icon } from "@iconify/react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { NonprofitService } from "@/services/nonprofit.service";
@@ -7,6 +7,7 @@ import { AuthService } from "@/services/auth.service";
 
 const NonprofitSkills = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, setUser } = useAuthStore();
   
   const [softSkills, setSoftSkills] = useState<string[]>([]);
@@ -196,8 +197,21 @@ const NonprofitSkills = () => {
       // Clear onboarding data
       NonprofitService.clearOnboardingData();
 
-      // Redirect to nonprofit dashboard
-      navigate("/non-profit");
+      // Check for redirect parameter
+      const redirectParam = searchParams.get('redirect');
+      if (redirectParam) {
+        // Use the redirect parameter if provided
+        try {
+          const decodedRedirect = decodeURIComponent(redirectParam);
+          navigate(decodedRedirect, { replace: true });
+        } catch (error) {
+          console.error('Error decoding redirect URL:', error);
+          navigate("/non-profit", { replace: true });
+        }
+      } else {
+        // Otherwise redirect to nonprofit dashboard
+        navigate("/non-profit", { replace: true });
+      }
     } catch (err: any) {
       console.error("❌ Failed to complete onboarding:", err);
       setError(err.response?.data?.message || "Failed to complete setup. Please try again.");
