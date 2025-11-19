@@ -154,6 +154,18 @@ function App() {
           path: "job/:id/apply",
           element: <ApplyPage />,
         },
+        {
+          path: "messages",
+          element: <MessagerPage />,
+        },
+        {
+          path: "settings",
+          element: <SettingsPage />,
+        },
+        {
+          path: "finder",
+          element: <FinderPage />,
+        },
       ],
     },
     {
